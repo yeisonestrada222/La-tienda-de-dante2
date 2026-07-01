@@ -1,0 +1,6 @@
+{
+  "name": "La Tienda de Dante",
+  "description": "Landing page de alta conversión para La Tienda de Dante, diseñada para integrarse con Shopify y Dropi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
