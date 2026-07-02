@@ -7,6 +7,7 @@ import Contact from './components/Contact';
 import Checkout from './components/Checkout';
 import IntegrationHub from './components/IntegrationHub';
 import ProductLandingPage from './components/ProductLandingPage';
+import LiveSocialProof from './components/LiveSocialProof';
 
 import { INITIAL_PRODUCTS, INITIAL_REVIEWS } from './data';
 import { Product, Review, ContactMessage } from './types';
@@ -564,6 +565,7 @@ export default function App() {
         </div>
       )}
 
+      <LiveSocialProof />
     </div>
   );
 }

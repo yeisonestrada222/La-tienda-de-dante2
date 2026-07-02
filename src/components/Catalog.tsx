@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Product } from '../types';
-import { Star, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { Star, ShoppingCart, CheckCircle2, MessageCircle, Sparkles } from 'lucide-react';
 
 interface CatalogProps {
   products: Product[];
@@ -11,12 +11,17 @@ interface CatalogProps {
 
 export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProduct, onOpenLandingProduct }: CatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
+  const [activeDanteTipId, setActiveDanteTipId] = useState<string | null>(null);
 
   const categories = ['Todos', 'Favoritos de Dante', 'Cuidado Higiene', 'Juguetes & Mente', 'Hogar', 'Paseo Seguro'];
 
   const filteredProducts = selectedCategory === 'Todos'
     ? products
     : products.filter(p => p.category === selectedCategory);
+
+  const toggleDanteTip = (productId: string) => {
+    setActiveDanteTipId(prev => prev === productId ? null : productId);
+  };
 
   return (
     <section id="catalogo" className="py-24 bg-slate-900">
@@ -58,7 +63,7 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
             </div>
             <h3 className="font-sans font-bold text-lg text-white">Catálogo en Sincronización</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              No encontramos productos reales disponibles para esta categoría en este momento. Si acabas de importar desde Dropi o Shopify, por favor verifica que estén activos y que tus credenciales de integración estén configuradas en el menú de ajustes.
+              No encontramos productos reales disponibles para esta categoría en este momento. Si acabas de importar desde Dropi, por favor verifica que estén activos en tu bodega.
             </p>
           </div>
         ) : (
@@ -68,14 +73,15 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
             const discountPercent = hasDiscount 
               ? Math.round(((product.compareAtPrice! - product.price) / product.compareAtPrice!) * 100)
               : 0;
+            const isTipOpen = activeDanteTipId === product.id;
 
             return (
               <div 
                 key={product.id} 
-                className="bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-amber-500/30 transition-all duration-300 flex flex-col group"
+                className="bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden shadow-xl hover:shadow-[0_0_35px_rgba(245,158,11,0.22)] hover:border-amber-500/50 transition-all duration-300 flex flex-col group"
               >
                 {/* Product Image Panel */}
-                <div className="relative aspect-square overflow-hidden bg-slate-900">
+                <div className="relative aspect-square overflow-hidden bg-slate-900 cursor-pointer" onClick={() => onOpenLandingProduct(product)}>
                   <img
                     src={product.imageUrl}
                     alt={product.name}
@@ -105,7 +111,10 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
                     </div>
                   </div>
 
-                  <h3 className="mt-3 font-sans font-bold text-lg text-white leading-tight">
+                  <h3 
+                    onClick={() => onOpenLandingProduct(product)}
+                    className="mt-3 font-sans font-bold text-lg text-white leading-tight hover:text-amber-400 transition-colors cursor-pointer"
+                  >
                     {product.name}
                   </h3>
 
@@ -135,8 +144,27 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
                     ))}
                   </div>
 
+                  {/* Dante Interactive Quote Button */}
+                  <div className="mt-4 pt-2">
+                    <button
+                      onClick={() => toggleDanteTip(product.id)}
+                      className="w-full py-1.5 px-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg text-amber-400 text-[11px] font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+                      <span>{isTipOpen ? "Ocultar consejo de Dante" : "🐶 ¿Qué opina Dante de esto?"}</span>
+                    </button>
+
+                    {isTipOpen && (
+                      <div className="mt-2 p-3 bg-slate-900/95 border border-amber-500/40 rounded-xl text-[11px] text-slate-200 animate-in fade-in slide-in-from-top-2 duration-300 shadow-inner">
+                        <p className="italic">
+                          <strong className="text-amber-400 not-italic">Dante dice:</strong> "¡Guau! Me encanta este producto porque es ultra resistente y perfecto para el día a día. Además, te llega con pago contra entrega en toda Colombia 🐾"
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Action Buttons */}
-                  <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="mt-4 grid grid-cols-2 gap-3">
                     <button
                       onClick={() => onOpenLandingProduct(product)}
                       className="py-2.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-white font-sans font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center"
@@ -145,7 +173,7 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
                     </button>
                     <button
                       onClick={() => onAddToCart(product)}
-                      className="py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
+                      className="py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-lg shadow-amber-500/10 hover:shadow-amber-500/30"
                     >
                       <ShoppingCart className="h-3.5 w-3.5" />
                       <span>Al Carrito</span>

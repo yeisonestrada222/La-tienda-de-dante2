@@ -1,11 +1,24 @@
-import { ArrowRight, ShieldCheck, Truck, Sparkles, Heart } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, ShieldCheck, Truck, Sparkles, Heart, MessageCircle } from 'lucide-react';
 
 interface HeroProps {
   onExploreCatalog: () => void;
   onOpenIntegrationHub: () => void;
 }
 
+const DANTE_QUOTES = [
+  "Aquí no hay compras con miedo ni envíos complicados. Todos nuestros despachos en Colombia son con Pago Contra Entrega y Envío Gratis. Tú pides, te llega a la puerta de tu casa en 1 a 3 días, y pagas en efectivo cuando lo recibes. ¡Garantía garantizada de lamidas de felicidad!",
+  "¡Guau! Si llevas 2 o más productos en tu pedido, te aplicamos un descuento especial del Club de Amigos de Dante directamente en el carrito 🐶✨",
+  "Mi humano empaca cada pedido con muchísimo cuidado y le ponemos una estampita de agradecimiento firmada con mi patita 🐾🇨🇴"
+];
+
 export default function Hero({ onExploreCatalog, onOpenIntegrationHub }: HeroProps) {
+  const [quoteIdx, setQuoteIdx] = useState(0);
+
+  const cycleQuote = () => {
+    setQuoteIdx((prev) => (prev + 1) % DANTE_QUOTES.length);
+  };
+
   return (
     <section 
       id="inicio" 
@@ -29,7 +42,7 @@ export default function Hero({ onExploreCatalog, onOpenIntegrationHub }: HeroPro
             {/* Elegant Floating Pill */}
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono uppercase tracking-wider mb-2">
               <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
-              <span>Tienda Familiar Shopify • 100% Protegida</span>
+              <span>Tienda Oficial Dante 🐾 • Envío Gratis & Contra Entrega</span>
             </div>
 
             {/* Display Title */}
@@ -42,15 +55,24 @@ export default function Hero({ onExploreCatalog, onOpenIntegrationHub }: HeroPro
             </p>
 
             {/* Story Box - Puppy's Perspective (Enormous trust builder for repurchase) */}
-            <div className="p-5 bg-slate-900/60 rounded-2xl border border-slate-800/60 relative overflow-hidden">
-              <div className="absolute top-3 right-4 opacity-10">
+            <div 
+              onClick={cycleQuote}
+              className="p-5 bg-slate-900/80 rounded-2xl border border-amber-500/30 hover:border-amber-500/60 relative overflow-hidden transition-all duration-300 cursor-pointer shadow-lg group"
+            >
+              <div className="absolute top-3 right-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
                 <Heart className="h-24 w-24 text-amber-500 fill-amber-500" />
               </div>
-              <h4 className="font-sans font-bold text-xs text-amber-500 uppercase tracking-wider mb-2 flex items-center space-x-2">
-                <span>Mi Promesa de Cachorro</span>
-              </h4>
-              <p className="text-xs text-slate-300 leading-relaxed italic relative z-10">
-                "Aquí no hay compras con miedo ni envíos complicados. Todos nuestros despachos en Colombia son con <strong className="text-white">Pago Contra Entrega y Envío Gratis</strong>. Tú pides, te llega a la puerta de tu casa en 1 a 3 días, y pagas en efectivo cuando lo recibes. ¡Garantía garantizada de lamidas de felicidad!"
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-sans font-bold text-xs text-amber-500 uppercase tracking-wider flex items-center space-x-2">
+                  <span>El Rincón de Dante (Tip #{quoteIdx + 1})</span>
+                </h4>
+                <span className="text-[10px] text-amber-400/80 bg-amber-500/10 px-2 py-0.5 rounded-full font-mono flex items-center space-x-1">
+                  <MessageCircle className="h-3 w-3 inline mr-1" />
+                  <span>Toca para escuchar a Dante</span>
+                </span>
+              </div>
+              <p className="text-xs text-slate-200 leading-relaxed italic relative z-10 min-h-[50px] transition-all">
+                "{DANTE_QUOTES[quoteIdx]}"
               </p>
             </div>
 
@@ -65,10 +87,11 @@ export default function Hero({ onExploreCatalog, onOpenIntegrationHub }: HeroPro
               </button>
               
               <button
-                onClick={onOpenIntegrationHub}
-                className="w-full sm:w-auto px-8 py-4 bg-slate-900 hover:bg-slate-850 text-white border border-slate-800 hover:border-amber-500/30 font-sans font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 transition-all duration-300 cursor-pointer"
+                onClick={cycleQuote}
+                className="w-full sm:w-auto px-8 py-4 bg-slate-900 hover:bg-slate-850 text-amber-400 border border-amber-500/30 hover:border-amber-500 font-sans font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 transition-all duration-300 cursor-pointer"
               >
-                <span>Exportar a tu Shopify</span>
+                <MessageCircle className="h-4 w-4" />
+                <span>¿Qué dice Dante hoy?</span>
               </button>
             </div>
 

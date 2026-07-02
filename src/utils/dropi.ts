@@ -68,6 +68,7 @@ export async function fetchDropiProducts(
 
   // Intentar múltiples endpoints conocidos de Dropi
   const endpoints = [
+    { url: `${cleanBase}/api/products`, method: 'POST', body: JSON.stringify({ page: 1, per_page: 100 }) },
     { url: `${cleanBase}/api/v2/products/index`, method: 'POST', body: JSON.stringify({ page: 1, per_page: 100 }) },
     { url: `${cleanBase}/api/v2/products`, method: 'GET', body: undefined },
     { url: `${cleanBase}/products/index`, method: 'POST', body: JSON.stringify({ page: 1, per_page: 100 }) },
