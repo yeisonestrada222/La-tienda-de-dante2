@@ -51,6 +51,17 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
         </div>
 
         {/* Product Grid */}
+        {filteredProducts.length === 0 ? (
+          <div className="bg-slate-950 border border-slate-850 rounded-2xl p-12 text-center space-y-4 max-w-xl mx-auto shadow-xl">
+            <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto text-amber-500 text-xl font-bold">
+              🐾
+            </div>
+            <h3 className="font-sans font-bold text-lg text-white">Catálogo en Sincronización</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              No encontramos productos reales disponibles para esta categoría en este momento. Si acabas de importar desde Dropi o Shopify, por favor verifica que estén activos y que tus credenciales de integración estén configuradas en el menú de ajustes.
+            </p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProducts.map((product) => {
             const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
@@ -145,6 +156,7 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
             );
           })}
         </div>
+        )}
 
       </div>
     </section>

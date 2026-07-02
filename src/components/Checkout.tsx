@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Product } from '../types';
 import { ShoppingBag, Truck, CheckCircle2, ShieldCheck, X, PhoneCall, CreditCard, DollarSign, ExternalLink } from 'lucide-react';
+import { syncOrderToDropi } from '../utils/api';
 
 interface CheckoutProps {
   cart: { product: Product; quantity: number }[];
@@ -23,6 +24,10 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [wompiUrl, setWompiUrl] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncSuccess, setSyncSuccess] = useState(false);
+  const [dropiId, setDropiId] = useState('');
 
   const itemsToCheckout = singleProduct 
     ? [{ product: singleProduct, quantity: 1 }]
@@ -30,15 +35,43 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
 
   const totalPrice = itemsToCheckout.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
 
-  const handleConfirmOrder = (e: FormEvent) => {
+  const handleConfirmOrder = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim() || !city.trim() || !address.trim()) return;
 
     const randomId = `DNT-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderId(randomId);
 
-    // Save order in localStorage so it displays in IntegrationHub's Historial
-    const newOrder = {
+    // Get Dropi credentials and mappings from localStorage
+    const dropiToken = localStorage.getItem('dante_dropi_token') || '';
+    const dropiBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
+    const mappingsStr = localStorage.getItem('dante_product_dropi_ids') || '{}';
+    let mappings: any = {};
+    try {
+      mappings = JSON.parse(mappingsStr);
+    } catch (err) {
+      mappings = {};
+    }
+
+    const items = itemsToCheckout.map(item => {
+      const defaultIds: Record<string, string> = {
+        'dante-01': '10001',
+        'dante-02': '10002',
+        'dante-03': '10003',
+        'dante-04': '10004',
+        'dante-05': '10005',
+      };
+      const dropiProductId = mappings[item.product.id] || defaultIds[item.product.id] || '10000';
+      return {
+        productId: item.product.id,
+        productName: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price,
+        dropiProductId
+      };
+    });
+
+    const newOrder: any = {
       id: randomId,
       name,
       phone,
@@ -47,17 +80,33 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
       city,
       address,
       indications,
-      items: itemsToCheckout.map(item => ({
-        productName: item.product.name,
-        quantity: item.quantity,
-        price: item.product.price
-      })),
+      items,
       totalPrice,
       paymentMethod,
       paymentStatus: paymentMethod === 'wompi' ? 'pending' : 'pending_cod',
       dropiSyncStatus: 'pending',
       date: new Date().toISOString()
     };
+
+    // Auto-sync with Dropi if it is Cash on Delivery and a token is present
+    if (paymentMethod === 'contra_entrega' && dropiToken.trim()) {
+      setIsSyncing(true);
+      setSyncError(null);
+      setSyncSuccess(false);
+      try {
+        const result = await syncOrderToDropi(newOrder, dropiToken, dropiBaseUrl);
+        newOrder.dropiSyncStatus = 'synced';
+        newOrder.dropiOrderId = result.id;
+        setDropiId(result.id);
+        setSyncSuccess(true);
+      } catch (err: any) {
+        newOrder.dropiSyncStatus = 'failed';
+        newOrder.dropiError = err.message;
+        setSyncError(err.message);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
 
     const existingOrdersStr = localStorage.getItem('dante_orders') || '[]';
     let existingOrders = [];
@@ -155,9 +204,32 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
                 <p className="text-slate-400 text-xs mt-3 max-w-sm mx-auto leading-relaxed">
                   ¡Hola <strong>{name}</strong>! Hemos registrado tus datos de envío. Para completar tu pago de forma 100% segura mediante Nequi, PSE o tarjeta, presiona el botón de Wompi oficial abajo.
                 </p>
+              ) : isSyncing ? (
+                <p className="text-amber-400 text-xs mt-3 max-w-sm mx-auto leading-relaxed flex items-center justify-center gap-2">
+                  <span className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                  Sincronizando automáticamente con el fulfillment de <strong>Dropi</strong>...
+                </p>
+              ) : syncSuccess ? (
+                <div className="space-y-1 mt-3 max-w-sm mx-auto">
+                  <p className="text-emerald-400 text-xs font-bold leading-relaxed">
+                    ¡Sincronizado con Dropi con éxito! 🎉
+                  </p>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Hola <strong>{name}</strong>, tu orden fue enviada a Dropi. ID de Pedido: <strong className="text-slate-200 font-mono">{dropiId}</strong>. Tu pedido ya está mapeado en bodega para su empaque.
+                  </p>
+                </div>
+              ) : syncError ? (
+                <div className="space-y-1 mt-3 max-w-sm mx-auto">
+                  <p className="text-red-400 text-xs font-bold leading-relaxed">
+                    Guardado Local - Faltó sincronizar con Dropi ⚠️
+                  </p>
+                  <p className="text-slate-450 text-[11px] leading-relaxed">
+                    Tu pedido fue registrado en el historial, pero la API de Dropi respondió: <span className="text-red-300 italic">"{syncError}"</span>. Puedes ir al panel administrativo para corregir y reintentar.
+                  </p>
+                </div>
               ) : (
                 <p className="text-slate-400 text-xs mt-3 max-w-sm mx-auto leading-relaxed">
-                  ¡Hola <strong>{name}</strong>! Hemos registrado tu pedido de forma correcta. Tu despacho ya se encuentra mapeado para sincronizarse automáticamente con el fulfillment de <strong>Dropi</strong>.
+                  ¡Hola <strong>{name}</strong>! Hemos registrado tu pedido de forma correcta. Recuerda configurar tu Token API de Dropi en el panel de administrador para habilitar el despacho automático.
                 </p>
               )}
             </div>

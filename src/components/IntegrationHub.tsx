@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { SHOPIFY_LIQUID_CODE, DROPI_INTEGRATION_STEPS } from '../data';
 import { Product } from '../types';
+import { syncOrderToDropi } from '../utils/api';
 
 interface IntegrationHubProps {
   products: Product[];
@@ -35,12 +36,13 @@ interface LocalOrder {
   city: string;
   address: string;
   indications?: string;
-  items: { productName: string; quantity: number; price: number }[];
+  items: { productName: string; quantity: number; price: number; dropiProductId: string }[];
   totalPrice: number;
   paymentMethod: 'contra_entrega' | 'wompi';
   paymentStatus: string;
   dropiSyncStatus: 'pending' | 'synced' | 'failed';
   dropiOrderId?: string;
+  dropiError?: string;
   date: string;
 }
 
@@ -53,11 +55,16 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
     products.reduce((acc, p) => ({ ...acc, [p.id]: p.price }), {})
   );
 
-  // Dropi & Wompi Credentials
+  // Dropi, Wompi & Shopify Credentials
   const [dropiToken, setDropiToken] = useState('');
+  const [dropiBaseUrl, setDropiBaseUrl] = useState('https://api.dropi.co');
   const [wompiPublicKey, setWompiPublicKey] = useState('');
+  const [shopifyStorefrontToken, setShopifyStorefrontToken] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   
+  // Product mappings
+  const [productDropiIds, setProductDropiIds] = useState<{ [key: string]: string }>({});
+
   // Local Orders
   const [orders, setOrders] = useState<LocalOrder[]>([]);
   const [syncingOrderId, setSyncingOrderId] = useState<string | null>(null);
@@ -65,9 +72,20 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
   // Load credentials and orders on mount
   useEffect(() => {
     const savedToken = localStorage.getItem('dante_dropi_token') || '';
+    const savedBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
     const savedWompiKey = localStorage.getItem('dante_wompi_public_key') || '';
+    const savedStorefrontToken = localStorage.getItem('dante_shopify_storefront_token') || '';
     setDropiToken(savedToken);
+    setDropiBaseUrl(savedBaseUrl);
     setWompiPublicKey(savedWompiKey);
+    setShopifyStorefrontToken(savedStorefrontToken);
+
+    const savedDropiIds = localStorage.getItem('dante_product_dropi_ids') || '{}';
+    try {
+      setProductDropiIds(JSON.parse(savedDropiIds));
+    } catch (e) {
+      setProductDropiIds({});
+    }
 
     const savedOrdersStr = localStorage.getItem('dante_orders') || '[]';
     try {
@@ -79,9 +97,15 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
 
   const handleSaveCredentials = () => {
     localStorage.setItem('dante_dropi_token', dropiToken.trim());
+    localStorage.setItem('dante_dropi_base_url', dropiBaseUrl.trim());
     localStorage.setItem('dante_wompi_public_key', wompiPublicKey.trim());
+    localStorage.setItem('dante_shopify_storefront_token', shopifyStorefrontToken.trim());
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
+    // Recargar la página para que App.tsx recargue los productos de Shopify
+    if (shopifyStorefrontToken.trim()) {
+      setTimeout(() => window.location.reload(), 1500);
+    }
   };
 
   const handleCopyCode = () => {
@@ -94,17 +118,38 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
     setSalePrices(prev => ({ ...prev, [productId]: val }));
   };
 
-  const handleSyncWithDropi = (orderId: string) => {
+  const handleDropiIdChange = (productId: string, val: string) => {
+    const updated = { ...productDropiIds, [productId]: val };
+    setProductDropiIds(updated);
+    localStorage.setItem('dante_product_dropi_ids', JSON.stringify(updated));
+  };
+
+  const handleSyncWithDropi = async (orderId: string) => {
     setSyncingOrderId(orderId);
     
-    // Simulate real API dispatch to api.dropi.co
-    setTimeout(() => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) {
+      setSyncingOrderId(null);
+      return;
+    }
+
+    if (!dropiToken.trim()) {
+      alert("⚠️ Debes configurar tu Token API de Dropi en la pestaña de credenciales antes de sincronizar.");
+      setSyncingOrderId(null);
+      return;
+    }
+
+    try {
+      // Execute actual API synchronization to Dropi
+      const result = await syncOrderToDropi(order as any, dropiToken, dropiBaseUrl);
+      
       const updatedOrders = orders.map(o => {
         if (o.id === orderId) {
           return {
             ...o,
             dropiSyncStatus: 'synced' as const,
-            dropiOrderId: `DRP-${Math.floor(1000000 + Math.random() * 9000000)}`
+            dropiOrderId: result.id,
+            dropiError: undefined
           };
         }
         return o;
@@ -112,9 +157,25 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
       
       localStorage.setItem('dante_orders', JSON.stringify(updatedOrders));
       setOrders(updatedOrders);
+      alert(`🎉 ¡Orden ${orderId} sincronizada con Dropi con éxito! ID de Pedido generado: ${result.id}`);
+    } catch (err: any) {
+      const updatedOrders = orders.map(o => {
+        if (o.id === orderId) {
+          return {
+            ...o,
+            dropiSyncStatus: 'failed' as const,
+            dropiError: err.message
+          };
+        }
+        return o;
+      });
+      
+      localStorage.setItem('dante_orders', JSON.stringify(updatedOrders));
+      setOrders(updatedOrders);
+      alert(`❌ Error al sincronizar con Dropi:\n${err.message}`);
+    } finally {
       setSyncingOrderId(null);
-      alert(`🎉 ¡Orden ${orderId} sincronizada con Dropi con éxito! Guía de despacho generada automáticamente.`);
-    }, 1500);
+    }
   };
 
   const handleClearOrders = () => {
@@ -231,6 +292,18 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                   </p>
 
                   <div className="space-y-1.5">
+                    <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">API Base URL de Dropi</label>
+                    <input
+                      type="text"
+                      value={dropiBaseUrl}
+                      onChange={(e) => setDropiBaseUrl(e.target.value)}
+                      placeholder="https://api.dropi.co"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                    />
+                    <p className="text-[9px] text-slate-500">Por defecto: https://api.dropi.co. Útil si tu cuenta es de otro país (ej. México, Ecuador).</p>
+                  </div>
+
+                  <div className="space-y-1.5">
                     <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">Token de API Dropi (Bearer Token)</label>
                     <input
                       type="password"
@@ -276,6 +349,42 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500"
                     />
                     <p className="text-[9px] text-slate-500">Consigue tu Llave Pública en tu cuenta de Wompi &gt; Desarrolladores.</p>
+                  </div>
+                </div>
+
+                {/* SHOPIFY STOREFRONT API CARD */}
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <Database className="h-4 w-4 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-sans font-bold text-sm text-white">Shopify Storefront API</h4>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Catálogo Dinámico</p>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase font-mono ${
+                      shopifyStorefrontToken ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/40' : 'bg-slate-950 text-slate-500'
+                    }`}>
+                      {shopifyStorefrontToken ? '🟢 Conectado' : '🔴 Sin Conectar'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Conecta tu tienda Shopify para que los productos importados de Dropi aparezcan automáticamente en tu catálogo. Sin este token, se mostrarán los productos de demostración.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">Storefront Access Token</label>
+                    <input
+                      type="password"
+                      value={shopifyStorefrontToken}
+                      onChange={(e) => setShopifyStorefrontToken(e.target.value)}
+                      placeholder="shpat_... (tu Storefront Access Token)"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                    />
+                    <p className="text-[9px] text-slate-500">Shopify Admin → Settings → Apps → Develop apps → Storefront API → Access Token.</p>
                   </div>
                 </div>
 
@@ -379,6 +488,15 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                                     <CheckCircle2 className="h-3 w-3" /> Enviado a Dropi
                                   </span>
                                   <div className="text-[9px] text-slate-500 font-mono">{o.dropiOrderId}</div>
+                                </div>
+                              ) : o.dropiSyncStatus === 'failed' ? (
+                                <div className="space-y-0.5">
+                                  <span className="inline-flex items-center gap-1 text-red-400 font-bold text-[10px]">
+                                    ⚠️ Fallido
+                                  </span>
+                                  <div className="text-[9px] text-red-500/80 max-w-[140px] truncate" title={o.dropiError}>
+                                    {o.dropiError || 'Error de API'}
+                                  </div>
                                 </div>
                               ) : (
                                 <span className="text-slate-500 font-mono text-[10px] uppercase">🕒 Pendiente de Envío</span>
@@ -639,10 +757,11 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
               <div className="border border-slate-900 rounded-xl overflow-hidden bg-slate-950 text-xs font-sans">
                 {/* Header */}
                 <div className="grid grid-cols-12 gap-2 bg-slate-900 p-3.5 font-bold text-slate-300 uppercase tracking-wider text-[10px]">
-                  <div className="col-span-4">Producto Dante</div>
+                  <div className="col-span-3">Producto Dante</div>
                   <div className="col-span-2 text-right">Costo Dropi</div>
-                  <div className="col-span-3 text-center">Precio de Venta (Ajustable)</div>
-                  <div className="col-span-3 text-right">Ganancia Neta COP</div>
+                  <div className="col-span-3 text-center">Precio de Venta</div>
+                  <div className="col-span-2 text-center">ID Producto Dropi</div>
+                  <div className="col-span-2 text-right">Ganancia Neta</div>
                 </div>
 
                 {/* Rows */}
@@ -651,10 +770,11 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                     const priceVal = salePrices[p.id] || p.price;
                     const profit = priceVal - p.dropiCost;
                     const marginPercent = ((profit / priceVal) * 100).toFixed(0);
+                    const dropiIdVal = productDropiIds[p.id] || '';
 
                     return (
                       <div key={p.id} className="grid grid-cols-12 gap-2 p-3.5 items-center">
-                        <div className="col-span-4 flex items-center space-x-3">
+                        <div className="col-span-3 flex items-center space-x-3">
                           <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded object-cover flex-shrink-0" referrerPolicy="no-referrer" />
                           <span className="font-semibold text-white truncate">{p.name}</span>
                         </div>
@@ -675,12 +795,22 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                           </div>
                         </div>
 
-                        <div className="col-span-3 text-right">
+                        <div className="col-span-2 text-center px-1">
+                          <input
+                            type="text"
+                            value={dropiIdVal}
+                            onChange={(e) => handleDropiIdChange(p.id, e.target.value)}
+                            placeholder="Ej. 10001"
+                            className="w-full bg-slate-900 border border-slate-850 rounded-lg px-2 py-1.5 text-center text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                          />
+                        </div>
+
+                        <div className="col-span-2 text-right">
                           <span className="font-bold text-emerald-400 font-mono text-sm block">
                             +${profit.toLocaleString('es-CO')} COP
                           </span>
-                          <span className="text-[10px] text-slate-500 font-mono uppercase block">
-                            Retorno: {marginPercent}% Margen
+                          <span className="text-[9px] text-slate-500 font-mono uppercase block">
+                            Retorno: {marginPercent}%
                           </span>
                         </div>
                       </div>
