@@ -33,7 +33,9 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
     ? [{ product: singleProduct, quantity: 1 }]
     : cart;
 
-  const totalPrice = itemsToCheckout.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const shippingCost = paymentMethod === 'wompi' ? 12000 : 15000;
+  const totalPrice = subtotal + shippingCost;
 
   const handleConfirmOrder = async (e: FormEvent) => {
     e.preventDefault();
@@ -309,8 +311,8 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
                     </div>
                   ))}
                   <div className="border-t border-slate-800/80 pt-2 flex justify-between items-center text-xs font-bold text-white">
-                    <span>Envío Nacional:</span>
-                    <span className="text-emerald-400 font-mono uppercase">Gratis</span>
+                    <span>{paymentMethod === 'wompi' ? 'Envío (Sin Recaudo):' : 'Envío + Gestión (Con Recaudo):'}</span>
+                    <span className="text-amber-400 font-mono">+${shippingCost.toLocaleString('es-CO')}</span>
                   </div>
                   <div className="border-t border-slate-800 pt-2 flex justify-between items-center text-sm font-extrabold text-amber-500">
                     <span>{paymentMethod === 'wompi' ? 'Total Online:' : 'Total a Pagar en Casa:'}</span>

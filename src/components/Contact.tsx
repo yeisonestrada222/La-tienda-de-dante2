@@ -75,17 +75,25 @@ export default function Contact({ onSaveMessage, savedMessages }: ContactProps) 
               <h3 className="font-sans font-bold text-lg text-white">Información de Atención</h3>
               
               <div className="space-y-4">
-                <div className="flex items-start space-x-4 bg-slate-950/40 p-4 rounded-xl border border-slate-900">
-                  <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500 flex-shrink-0">
-                    <Mail className="h-5 w-5" />
+                <a 
+                  href="mailto:servicioalcliente@latiendadedante.com?subject=Consulta%20-%20La%20Tienda%20de%20Dante" 
+                  className="flex items-center justify-between bg-slate-950/40 hover:bg-slate-900/60 p-4 rounded-xl border border-slate-900 hover:border-amber-500/50 transition-all group cursor-pointer"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500 group-hover:scale-110 transition-transform flex-shrink-0">
+                      <Mail className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-sans font-bold text-xs text-white uppercase tracking-wider">Soporte Correo</h4>
+                      <p className="text-slate-300 group-hover:text-amber-400 text-xs mt-1 font-medium transition-colors break-all">
+                        servicioalcliente@latiendadedante.com
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-sans font-bold text-xs text-white uppercase tracking-wider">Soporte Correo</h4>
-                    <a href="mailto:servicioalcliente@latiendadedante.com" className="text-slate-300 hover:text-amber-400 text-xs mt-1 font-medium block transition-colors break-all">
-                      servicioalcliente@latiendadedante.com
-                    </a>
+                  <div className="text-amber-400 font-bold text-xs px-3 py-1.5 bg-amber-500/10 rounded-lg group-hover:bg-amber-500 group-hover:text-black transition-all">
+                    Enviar Correo ✉️
                   </div>
-                </div>
+                </a>
 
                 <a
                   href="https://wa.me/573108245540?text=Hola%20La%20Tienda%20de%20Dante,%20necesito%20asistencia%20con%20un%20producto%20o%20pedido."

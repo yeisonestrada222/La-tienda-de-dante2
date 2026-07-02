@@ -97,7 +97,9 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
         { product: product, quantity: currentPackage.quantity, price: currentPackage.unitPrice }
       ];
 
-  const totalPrice = itemsToCheckout.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const shippingCost = 15000;
+  const totalPrice = subtotal + shippingCost;
 
   const handleConfirmOrder = (e: FormEvent) => {
     e.preventDefault();
@@ -616,9 +618,9 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                       ))}
                       
                       <div className="border-t border-slate-900 pt-2 flex justify-between items-center text-xs font-bold text-white">
-                        <span>Flete de Envío (Toda Colombia):</span>
-                        <span className="text-emerald-400 font-mono uppercase font-extrabold flex items-center space-x-1">
-                          <span>GRATIS</span>
+                        <span>Envío + Gestión (Con Recaudo):</span>
+                        <span className="text-amber-400 font-mono font-extrabold flex items-center space-x-1">
+                          <span>+${shippingCost.toLocaleString('es-CO')}</span>
                           <Truck className="h-3.5 w-3.5" />
                         </span>
                       </div>

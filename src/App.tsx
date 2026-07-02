@@ -19,7 +19,7 @@ import { fetchDropiProducts } from './utils/dropi';
 const DEFAULT_SHOPIFY_SECRET = import.meta.env.VITE_SHOPIFY_TOKEN || '';
 
 export default function App() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [shopifyConnected, setShopifyConnected] = useState(false);
   const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
@@ -59,14 +59,12 @@ export default function App() {
           setProducts(shopifyProducts);
           setShopifyConnected(true);
         } else {
-          // No hay productos reales, mantener array vacío (sin inventar productos)
-          setProducts([]);
-          setShopifyConnected(true);
+          setProducts(INITIAL_PRODUCTS);
+          setShopifyConnected(false);
         }
       } catch (err: any) {
         console.warn('[Dante Store] Error consultando Shopify:', err.message);
-        // Si falla por CORS en el navegador, dejamos array vacío y guiamos al usuario en UI
-        setProducts([]);
+        setProducts(INITIAL_PRODUCTS);
         setShopifyConnected(false);
       } finally {
         setIsLoadingProducts(false);
