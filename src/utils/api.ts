@@ -101,7 +101,7 @@ export async function syncOrderToDropi(
       nombre: order.name,
       direccion: order.address,
       telefono: order.phone,
-      correo: order.email || 'cliente@latiendadedante.com',
+      correo: order.email || 'servicioalcliente@latiendadedante.com',
       departamento: order.department,
       ciudad: order.city,
       barrio: order.indications || ''

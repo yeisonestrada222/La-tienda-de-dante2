@@ -83,15 +83,6 @@ export default function Navbar({
 
           {/* Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Integration Hub Toggle */}
-            <button
-              onClick={onOpenIntegrationHub}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/50 hover:bg-slate-850 text-slate-200 hover:text-amber-400 text-xs font-semibold tracking-wider transition-all duration-300 cursor-pointer"
-            >
-              <Code className="h-4 w-4 text-amber-500" />
-              <span>EXPORTAR A SHOPIFY</span>
-            </button>
-
             {/* Cart Icon */}
             <div className="relative">
               <button
@@ -237,18 +228,6 @@ export default function Navbar({
                 {link.label}
               </button>
             ))}
-          </div>
-          <div className="border-t border-slate-850 pt-4 flex flex-col space-y-3">
-            <button
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                onOpenIntegrationHub();
-              }}
-              className="flex items-center justify-center space-x-2 w-full py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-amber-500 text-xs font-bold tracking-wider cursor-pointer"
-            >
-              <Code className="h-4 w-4" />
-              <span>EXPORTAR A SHOPIFY</span>
-            </button>
           </div>
         </div>
       )}

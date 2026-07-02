@@ -250,7 +250,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
               </p>
               
               <a
-                href={`https://wa.me/573214567890?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20con%20ID%20${orderId}%20de%20valor%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho`}
+                href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20con%20ID%20${orderId}%20de%20valor%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all text-center"

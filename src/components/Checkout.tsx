@@ -75,7 +75,7 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
       id: randomId,
       name,
       phone,
-      email: email || 'cliente@dantestore.com',
+      email: email || 'servicioalcliente@latiendadedante.com',
       department,
       city,
       address,
@@ -207,29 +207,29 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
               ) : isSyncing ? (
                 <p className="text-amber-400 text-xs mt-3 max-w-sm mx-auto leading-relaxed flex items-center justify-center gap-2">
                   <span className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
-                  Sincronizando automáticamente con el fulfillment de <strong>Dropi</strong>...
+                  Sincronizando automáticamente con nuestro <strong>centro de despacho</strong>...
                 </p>
               ) : syncSuccess ? (
                 <div className="space-y-1 mt-3 max-w-sm mx-auto">
                   <p className="text-emerald-400 text-xs font-bold leading-relaxed">
-                    ¡Sincronizado con Dropi con éxito! 🎉
+                    ¡Orden registrada con éxito para despacho! 🎉
                   </p>
                   <p className="text-slate-400 text-[11px] leading-relaxed">
-                    Hola <strong>{name}</strong>, tu orden fue enviada a Dropi. ID de Pedido: <strong className="text-slate-200 font-mono">{dropiId}</strong>. Tu pedido ya está mapeado en bodega para su empaque.
+                    Hola <strong>{name}</strong>, tu orden ha sido confirmada. ID de Guía: <strong className="text-slate-200 font-mono">{dropiId}</strong>. Tu pedido ya está asignado en bodega para empaque inmediato.
                   </p>
                 </div>
               ) : syncError ? (
                 <div className="space-y-1 mt-3 max-w-sm mx-auto">
-                  <p className="text-red-400 text-xs font-bold leading-relaxed">
-                    Guardado Local - Faltó sincronizar con Dropi ⚠️
+                  <p className="text-amber-400 text-xs font-bold leading-relaxed">
+                    ¡Pedido Guardado con Éxito! 🐾
                   </p>
                   <p className="text-slate-450 text-[11px] leading-relaxed">
-                    Tu pedido fue registrado en el historial, pero la API de Dropi respondió: <span className="text-red-300 italic">"{syncError}"</span>. Puedes ir al panel administrativo para corregir y reintentar.
+                    Tu pedido fue registrado en el sistema. Un asesor de La Tienda de Dante te contactará si requiere confirmar datos adicionales.
                   </p>
                 </div>
               ) : (
                 <p className="text-slate-400 text-xs mt-3 max-w-sm mx-auto leading-relaxed">
-                  ¡Hola <strong>{name}</strong>! Hemos registrado tu pedido de forma correcta. Recuerda configurar tu Token API de Dropi en el panel de administrador para habilitar el despacho automático.
+                  ¡Hola <strong>{name}</strong>! Hemos registrado tu pedido de forma correcta. En breve procederemos con la preparación y envío a tu domicilio.
                 </p>
               )}
             </div>
@@ -276,7 +276,7 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
                 </p>
                 
                 <a
-                  href={`https://wa.me/573214567890?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20con%20ID%20${orderId}%20de%20valor%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho%20por%20Dropi.`}
+                  href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20con%20ID%20${orderId}%20de%20valor%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho%20inmediato.`}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-lg flex items-center justify-center space-x-1.5 transition-all text-center"

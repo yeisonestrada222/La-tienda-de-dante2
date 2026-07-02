@@ -81,19 +81,34 @@ export default function Contact({ onSaveMessage, savedMessages }: ContactProps) 
                   </div>
                   <div>
                     <h4 className="font-sans font-bold text-xs text-white uppercase tracking-wider">Soporte Correo</h4>
-                    <p className="text-slate-400 text-xs mt-1">soporte@tiendadante.co</p>
+                    <a href="mailto:servicioalcliente@latiendadedante.com" className="text-slate-300 hover:text-amber-400 text-xs mt-1 font-medium block transition-colors break-all">
+                      servicioalcliente@latiendadedante.com
+                    </a>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4 bg-slate-950/40 p-4 rounded-xl border border-slate-900">
-                  <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500 flex-shrink-0">
-                    <Phone className="h-5 w-5" />
+                <a
+                  href="https://wa.me/573108245540?text=Hola%20La%20Tienda%20de%20Dante,%20necesito%20asistencia%20con%20un%20producto%20o%20pedido."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between bg-emerald-950/40 hover:bg-emerald-900/50 p-4 rounded-xl border border-emerald-900/50 hover:border-emerald-500/50 transition-all group cursor-pointer"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2.5 rounded-lg bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                      <Phone className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-sans font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <span>WhatsApp Soporte</span>
+                        <span className="bg-emerald-500 text-black text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase">Inmediato</span>
+                      </h4>
+                      <p className="text-emerald-400 font-mono font-bold text-xs mt-1">+57 310 824 5540</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-sans font-bold text-xs text-white uppercase tracking-wider">WhatsApp Soporte</h4>
-                    <p className="text-slate-400 text-xs mt-1">+57 321 456 7890</p>
+                  <div className="text-emerald-400 font-bold text-xs px-3 py-1.5 bg-emerald-500/10 rounded-lg group-hover:bg-emerald-500 group-hover:text-black transition-all">
+                    Chatear Ahora 💬
                   </div>
-                </div>
+                </a>
 
                 <div className="flex items-start space-x-4 bg-slate-950/40 p-4 rounded-xl border border-slate-900">
                   <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500 flex-shrink-0">
@@ -101,7 +116,8 @@ export default function Contact({ onSaveMessage, savedMessages }: ContactProps) 
                   </div>
                   <div>
                     <h4 className="font-sans font-bold text-xs text-white uppercase tracking-wider">Horario de Servicio</h4>
-                    <p className="text-slate-400 text-xs mt-1">Lunes a Sábado: 8:00 AM - 8:00 PM (Hora Colombia)</p>
+                    <p className="text-amber-400 font-bold text-xs mt-1">Atención 24/7</p>
+                    <p className="text-slate-400 text-[11px]">Todos los días de la semana, siempre disponibles para ti</p>
                   </div>
                 </div>
               </div>

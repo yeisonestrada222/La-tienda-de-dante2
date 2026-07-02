@@ -319,11 +319,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       
-      {/* Floating Info Banner explaining the design */}
-      <div className="bg-amber-500 text-black py-2 px-4 text-center text-xs font-sans font-extrabold flex items-center justify-center space-x-2 z-50 relative">
-        <Sparkles className="h-4 w-4 animate-spin" />
-        <span>PLANNING SHOPIFY CON CONTRA ENTREGA: CLIC EN "EXPORTAR A SHOPIFY" PARA OBTENER EL CÓDIGO LIQUID Y GUÍA</span>
-      </div>
+
 
       {/* Navigation Bar */}
       <Navbar
@@ -410,14 +406,12 @@ export default function App() {
           <span className="font-sans font-extrabold text-sm tracking-widest text-white">DANTE STORE</span>
         </div>
         <p className="max-w-md mx-auto leading-relaxed">
-          Landing page de alta conversión optimizada para Latinoamérica. Plantilla compatible con Shopify OS 2.0 y automatizaciones con Dropi.
+          Tienda Oficial de Dante • Los mejores productos seleccionados para tu mascota con Envío Rápido y Pago Contra Entrega.
         </p>
-        <div className="flex justify-center space-x-6 text-slate-400">
-          <button onClick={() => setIsIntegrationHubOpen(true)} className="hover:text-amber-500 font-bold">Manual Shopify</button>
+        <div className="flex justify-center items-center space-x-4 text-slate-400">
+          <button onClick={() => setIsIntegrationHubOpen(true)} className="hover:text-amber-500 font-bold">Configuración</button>
           <span>•</span>
-          <button onClick={() => setIsIntegrationHubOpen(true)} className="hover:text-amber-500 font-bold">Configuración Dropi</button>
-          <span>•</span>
-          <span className="text-slate-600">© {new Date().getFullYear()} Dante Store Inc. Todos los derechos reservados.</span>
+          <span className="text-slate-600">© {new Date().getFullYear()} La Tienda de Dante. Todos los derechos reservados.</span>
         </div>
       </footer>
 
