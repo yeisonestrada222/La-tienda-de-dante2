@@ -1,7 +1,8 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { Product } from '../types';
 import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, Heart, ArrowLeft, PhoneCall, Clock, Users, Flame, ShieldAlert, Gift, ThumbsUp } from 'lucide-react';
 import { syncOrderToDropi } from '../utils/api';
+import { trackViewContent, trackInitiateCheckout, trackPurchase } from '../utils/tracking';
 
 interface ProductLandingPageProps {
   product: Product;
@@ -48,8 +49,8 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   };
 
   const upsellConfigBase = getUpsellConfig(product.id);
-  const upsellProduct = allProducts.find(p => p.id === upsellConfigBase.targetId) || allProducts[1];
-  // Bug #6: precio dинámico real del producto upsell con 20% de descuento
+  // QA Bug P1: guard contra upsellProduct undefined cuando catálogo tiene 0-1 producto
+  const upsellProduct = allProducts.find(p => p.id === upsellConfigBase.targetId) || (allProducts.length > 1 ? allProducts[1] : null);
   const upsellConfig = {
     ...upsellConfigBase,
     discountedPrice: upsellProduct ? Math.round(upsellProduct.price * 0.80) : 49000,
@@ -70,7 +71,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
 
   const currentPackage = getPackageInfo();
 
-  const itemsToCheckout = isUpsellAdded 
+  const itemsToCheckout = (isUpsellAdded && upsellProduct)
     ? [
         { product: product, quantity: currentPackage.quantity, price: currentPackage.unitPrice },
         { product: upsellProduct, quantity: 1, price: upsellConfig.discountedPrice }
@@ -80,7 +81,9 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
       ];
 
   const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shippingCost = 20000;
+  // OPT #5: Envío gratis por compra >= $150.000
+  const FREE_SHIPPING_THRESHOLD = 150000;
+  const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 20000;
   const totalPrice = subtotal + shippingCost;
 
   const handleConfirmOrder = async (e: FormEvent) => {
@@ -241,9 +244,10 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Scroll to top when landing page loads
+  // OPT #3: Track ViewContent cuando se carga la landing de producto
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    trackViewContent({ name: product.name, price: product.price, id: product.id });
   }, [product]);
 
   return (
@@ -460,6 +464,47 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   </span>
                 </div>
 
+                {/* ═══ OPT #1: URGENCY STRIP — Contador + Viewers + Stock ═══ */}
+                <div className="bg-red-950/40 border border-red-500/30 rounded-xl px-4 py-2.5 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5">
+                      <Clock className="h-3.5 w-3.5 text-red-400 animate-pulse" />
+                      <span className="text-[10px] text-red-300 font-bold uppercase tracking-wider">
+                        Precio especial expira en:
+                      </span>
+                    </div>
+                    <span className="font-mono text-red-400 font-extrabold text-sm tracking-widest">
+                      {formatTimer(timeLeft)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <div className="flex items-center space-x-1">
+                      <Users className="h-3 w-3 text-amber-400" />
+                      <span className="text-slate-300">
+                        <strong className="text-amber-400">{viewers}</strong> personas viendo ahora
+                      </span>
+                    </div>
+                    <div className={`flex items-center space-x-1 font-bold ${stockLeft <= 5 ? 'text-red-400' : 'text-amber-400'}`}>
+                      <ShieldAlert className="h-3 w-3" />
+                      <span>Solo {stockLeft} en stock</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OPT #5: Barra de progreso envío gratis */}
+                {subtotal < FREE_SHIPPING_THRESHOLD && (
+                  <div className="p-2.5 bg-emerald-950/30 border border-emerald-500/20 rounded-xl text-center">
+                    <p className="text-[10px] text-emerald-400 font-bold">
+                      🎁 Agrega ${(FREE_SHIPPING_THRESHOLD - subtotal).toLocaleString('es-CO')} más y obtén <strong>¡ENVÍO GRATIS!</strong>
+                    </p>
+                  </div>
+                )}
+                {subtotal >= FREE_SHIPPING_THRESHOLD && (
+                  <div className="p-2.5 bg-emerald-950/30 border border-emerald-500/20 rounded-xl text-center">
+                    <p className="text-[10px] text-emerald-400 font-bold">🚚 ¡Felicidades! Tu pedido tiene <strong>ENVÍO GRATIS</strong> 🎉</p>
+                  </div>
+                )}
+
                 {/* CLEAN MULTI-BUY SELECTOR */}
                 <div className="space-y-2">
                   <label className="block text-[11px] text-slate-300 font-bold">
@@ -547,7 +592,8 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   </div>
                 </div>
 
-                {/* FAST CROSS-SELL / COMBO CARD */}
+                {/* FAST CROSS-SELL / COMBO CARD — QA Bug P1: guard upsellProduct */}
+                {upsellProduct && (
                 <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-center justify-between">
                   <div className="flex items-center space-x-2.5 min-w-0">
                     <img
@@ -558,7 +604,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                     />
                     <div className="min-w-0">
                       <span className="block text-white text-xs font-bold truncate">Añadir {upsellProduct.name}</span>
-                      <span className="text-amber-400 font-mono text-xs font-bold">+${upsellConfig.discountedPrice.toLocaleString('es-CO')} <span className="text-slate-500 line-through text-[9px]">(-25% OFF)</span></span>
+                      <span className="text-amber-400 font-mono text-xs font-bold">+${upsellConfig.discountedPrice.toLocaleString('es-CO')} <span className="text-slate-500 line-through text-[9px]">(-20% OFF)</span></span>
                     </div>
                   </div>
 
@@ -581,6 +627,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                     </button>
                   )}
                 </div>
+                )}
 
                 {/* FAST CHECKOUT FORM */}
                 <form onSubmit={handleConfirmOrder} className="space-y-3.5">

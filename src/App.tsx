@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Catalog from './components/Catalog';
@@ -7,7 +7,8 @@ import Contact from './components/Contact';
 import Checkout from './components/Checkout';
 import IntegrationHub from './components/IntegrationHub';
 import ProductLandingPage from './components/ProductLandingPage';
-import LiveSocialProof from './components/LiveSocialProof';
+import ExitIntentModal from './components/ExitIntentModal';
+import { useExitIntent } from './hooks/useExitIntent';
 
 import { INITIAL_PRODUCTS, INITIAL_REVIEWS } from './data';
 import { Product, Review, ContactMessage } from './types';
@@ -87,10 +88,24 @@ export default function App() {
     loadRealProducts();
   }, []);
   
-  // Cart & Checkout state
-  const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([]);
+  // QA Bug P2: Carrito persistente en localStorage
+  const [cart, setCart] = useState<{ product: Product; quantity: number }[]>(() => {
+    try { return JSON.parse(localStorage.getItem('dante_cart') || '[]'); }
+    catch { return []; }
+  });
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [singleCheckoutProduct, setSingleCheckoutProduct] = useState<Product | null>(null);
+
+  // CRO OPT #4: Exit Intent state
+  const [isExitIntentOpen, setIsExitIntentOpen] = useState(false);
+  const cartTotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+
+  useExitIntent({
+    onExitIntent: useCallback(() => {
+      if (cart.length > 0 && !isCheckoutOpen) setIsExitIntentOpen(true);
+    }, [cart.length, isCheckoutOpen]),
+    once: true,
+  });
   
   // Active Landing Product for campaign funnel (Subpágina dedicada)
   const [activeLandingProduct, setActiveLandingProduct] = useState<Product | null>(null);
@@ -173,16 +188,20 @@ export default function App() {
     }, isReal ? 8000 : 6000);
   };
 
+  // QA Bug P3: simulation alert only fires once on mount (not on every products change)
+  const productsRef = useRef(products);
+  productsRef.current = products;
+
   useEffect(() => {
-    // Function wrapper for the interval loop
     const runSimulation = () => {
-      triggerAlert();
+      const currentProducts = productsRef.current;
+      triggerAlert(
+        undefined, undefined,
+        currentProducts.length > 0 ? currentProducts[Math.floor(Math.random() * currentProducts.length)].name : 'Producto Dante'
+      );
     };
 
-    // First trigger after 4 seconds
     const initialTimeout = setTimeout(runSimulation, 4000);
-    
-    // Repeat every 25 seconds
     const interval = setInterval(runSimulation, 25000);
 
     return () => {
@@ -192,7 +211,7 @@ export default function App() {
         clearTimeout(alertTimeoutRef.current);
       }
     };
-  }, [products]);
+  }, []);  // no depende de products para evitar re-montar
 
   // Handle section tracking on scroll
   useEffect(() => {
@@ -219,17 +238,25 @@ export default function App() {
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.product.id === product.id);
+      let newCart;
       if (existing) {
-        return prevCart.map((item) =>
+        newCart = prevCart.map((item) =>
           item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
+      } else {
+        newCart = [...prevCart, { product, quantity: 1 }];
       }
-      return [...prevCart, { product, quantity: 1 }];
+      localStorage.setItem('dante_cart', JSON.stringify(newCart));
+      return newCart;
     });
   };
 
   const handleRemoveFromCart = (productId: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
+    setCart((prevCart) => {
+      const newCart = prevCart.filter((item) => item.product.id !== productId);
+      localStorage.setItem('dante_cart', JSON.stringify(newCart));
+      return newCart;
+    });
   };
 
   const handleAddReview = (newReview: Review) => {
@@ -380,18 +407,29 @@ export default function App() {
       {/* FLOATING DRAW-OVER: Cash on Delivery Checkout Form */}
       {isCheckoutOpen && (
         <Checkout
+          isOpen={isCheckoutOpen}
           cart={cart}
           singleProduct={singleCheckoutProduct}
           onClose={() => {
             setIsCheckoutOpen(false);
             setSingleCheckoutProduct(null);
           }}
-          onClearCart={() => setCart([])}
+          onClearCart={() => { setCart([]); localStorage.removeItem('dante_cart'); }}
           onNewOrderAlert={(name, city, product) => triggerAlert(name, city, product, true)}
         />
       )}
 
-      {/* Conversion-boosting Live Purchase Alert (Pill bottom-left) */}
+      {/* CRO OPT #4: Exit Intent Modal para recuperar abandonos de carrito */}
+      {isExitIntentOpen && cart.length > 0 && (
+        <ExitIntentModal
+          isOpen={isExitIntentOpen}
+          onClose={() => setIsExitIntentOpen(false)}
+          onOpenCheckout={handleOpenGeneralCheckout}
+          cartTotal={cartTotal}
+        />
+      )}
+
+      {/* Conversion-boosting Live Purchase Alert (Pill bottom-left) — QA Bug P1: único sistema */}
       {liveAlert && (
         <div className={`fixed bottom-6 left-6 z-40 backdrop-blur p-4 rounded-xl shadow-2xl flex items-center space-x-3.5 max-w-sm animate-slideUp border transition-all duration-500 ${
           liveAlert.isReal 
@@ -427,8 +465,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      <LiveSocialProof />
     </div>
   );
 }

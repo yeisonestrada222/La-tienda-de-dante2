@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Product } from '../types';
 import { X, Truck, CheckCircle2, ShieldCheck, PhoneCall } from 'lucide-react';
 import { syncOrderToDropi } from '../utils/api';
+import { trackInitiateCheckout, trackPurchase } from '../utils/tracking';
 
 interface CheckoutProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export default function Checkout({
 }: CheckoutProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');  // OPT #2: captura email real del comprador
   const [department, setDepartment] = useState('Bogotá D.C.');
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
@@ -29,6 +31,7 @@ export default function Checkout({
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [personalCoupon, setPersonalCoupon] = useState('DANTE15');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncSuccess, setSyncSuccess] = useState(false);
@@ -39,8 +42,17 @@ export default function Checkout({
     : cart;
 
   const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  const shippingCost = 20000;
+  // OPT #5: Envío gratis por compra >= $150.000 (incentiva aumentar el ticket AOV)
+  const FREE_SHIPPING_THRESHOLD = 150000;
+  const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 20000;
   const totalPrice = subtotal + shippingCost;
+
+  // OPT #6: Cupón personalizado único por cliente (sin backend)
+  const generatePersonalCoupon = (customerName: string, oId: string): string => {
+    const prefix = customerName.replace(/\s+/g, '').substring(0, 4).toUpperCase();
+    const suffix = oId.replace('DNT-', '').substring(0, 3);
+    return `DANTE${prefix}${suffix}`;
+  };
 
   const handleConfirmOrder = async (e: FormEvent) => {
     e.preventDefault();
@@ -51,8 +63,13 @@ export default function Checkout({
     if (!city.trim()) { alert('Por favor ingresa tu ciudad.'); return; }
     if (address.trim().length < 6) { alert('Por favor ingresa una dirección completa (mínimo 6 caracteres).'); return; }
 
+    // OPT #3: Evento de tracking al iniciar checkout
+    trackInitiateCheckout(totalPrice, itemsToCheckout.length);
+
     const randomId = `DNT-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderId(randomId);
+    const coupon = generatePersonalCoupon(name, randomId);
+    setPersonalCoupon(coupon);
 
     const dropiToken = localStorage.getItem('dante_dropi_token') || '';
     const dropiBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
@@ -68,11 +85,11 @@ export default function Checkout({
         : (item.product as any).dropiId || item.product.id
     }));
 
-    const newOrder = {
+    const newOrder: any = {
       id: randomId,
       customerName: name,
-      phone,
-      email: 'servicioalcliente@latiendadedante.com',
+      phone: phoneClean,
+      email: email.trim() || 'cliente@latiendadedante.com', // OPT #2
       department,
       city,
       address,
@@ -114,6 +131,31 @@ export default function Checkout({
     }
     existingOrders.unshift(newOrder);
     localStorage.setItem('dante_orders', JSON.stringify(existingOrders));
+
+    // OPT #3: Evento Purchase para Meta y TikTok
+    trackPurchase(randomId, totalPrice, items.map(i => ({ id: i.id, name: i.name })));
+
+    // OPT #6: Disparar webhook n8n post-orden si está configurado
+    const n8nUrl = localStorage.getItem('dante_n8n_webhook_url') || '';
+    if (n8nUrl.trim()) {
+      try {
+        await fetch(n8nUrl.trim(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'new_order_placed',
+            source: 'La Tienda de Dante — Checkout',
+            order: {
+              id: randomId, customerName: name, phone: phoneClean,
+              email: email.trim(), city, department, totalPrice,
+              coupon, items: itemsToCheckout.map(i => i.product.name),
+              whatsappLink: `https://wa.me/57${phoneClean}?text=Hola%20${encodeURIComponent(name)}!%20Tu%20pedido%20${randomId}%20est%C3%A1%20confirmado%20%F0%9F%8E%89%20C%C3%B3digo%20VIP%3A%20${coupon}`
+            },
+            timestamp: new Date().toISOString()
+          })
+        });
+      } catch { /* no bloquear la compra si n8n falla */ }
+    }
 
     setIsSuccess(true);
 
@@ -194,21 +236,23 @@ export default function Checkout({
               )}
             </div>
 
-            {/* VIP RECOMPRA COUPON */}
+            {/* OPT #6: Cupón personalizado con fecha de expiración */}
             <div className="p-4 bg-gradient-to-br from-amber-500/15 to-amber-500/5 border border-amber-500/30 rounded-2xl w-full max-w-sm mx-auto text-center space-y-1.5">
               <span className="text-[9px] font-mono text-amber-400 uppercase tracking-widest font-extrabold block">
-                🎁 Regalo para Recompra VIP
+                🎁 Tu Cupón Personal — Válido 30 días
               </span>
               <h4 className="text-white font-bold text-xs">¡15% OFF en tu próxima compra!</h4>
               <div className="inline-block px-4 py-1.5 bg-slate-950 border border-amber-500/50 rounded-lg font-mono text-amber-400 font-extrabold tracking-widest text-base select-all">
-                DANTE15
+                {personalCoupon}
               </div>
-              <p className="text-[9px] text-slate-400">Guarda este código para usarlo en cualquier producto.</p>
+              <p className="text-[9px] text-slate-400">
+                Expira: {new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('es-CO')} · Solo para ti 🐾
+              </p>
             </div>
 
-            {/* Express WhatsApp Confirmation */}
+            {/* Express WhatsApp Confirmation — OPT #6: mensaje pre-llenado */}
             <a
-              href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20%23${orderId}%20de%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho`}
+              href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante%2C%20confirmo%20mi%20pedido%20%23${orderId}.%20Soy%20${encodeURIComponent(name)}%20en%20${encodeURIComponent(address)}%2C%20${encodeURIComponent(city)}.%20Total%3A%20%24${totalPrice.toLocaleString('es-CO')}%20COP`}
               target="_blank"
               rel="noreferrer"
               className="w-full max-w-sm mx-auto py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all text-center shadow-lg shadow-emerald-500/20 block"
@@ -260,7 +304,18 @@ export default function Checkout({
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Tu Celular / WhatsApp *"
+                    placeholder="Tu Celular / WhatsApp (ej: 3001234567) *"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                {/* OPT #2: Campo de email para retención y remarketing */}
+                <div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Tu Email — Opcional (recibe tu cupón 🎁)"
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
                   />
                 </div>
