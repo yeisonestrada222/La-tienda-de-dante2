@@ -44,7 +44,12 @@ export default function Checkout({
 
   const handleConfirmOrder = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !city.trim() || !address.trim()) return;
+    // Bug #4: validación de celular colombiano (10 dígitos, empieza en 3)
+    const phoneClean = phone.replace(/\s/g, '');
+    if (!name.trim()) { alert('Por favor ingresa tu nombre completo.'); return; }
+    if (!/^3\d{9}$/.test(phoneClean)) { alert('Ingresa un celular colombiano válido (10 dígitos, ej: 3001234567).'); return; }
+    if (!city.trim()) { alert('Por favor ingresa tu ciudad.'); return; }
+    if (address.trim().length < 6) { alert('Por favor ingresa una dirección completa (mínimo 6 caracteres).'); return; }
 
     const randomId = `DNT-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderId(randomId);
@@ -52,11 +57,15 @@ export default function Checkout({
     const dropiToken = localStorage.getItem('dante_dropi_token') || '';
     const dropiBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
 
+    // Bug #3: incluir dropiProductId real para que Dropi no reciba id=0
     const items = itemsToCheckout.map(item => ({
       id: item.product.id,
       name: item.product.name,
       price: item.product.price,
-      quantity: item.quantity
+      quantity: item.quantity,
+      dropiProductId: item.product.id.startsWith('dropi-')
+        ? item.product.id.replace('dropi-', '')
+        : (item.product as any).dropiId || item.product.id
     }));
 
     const newOrder = {
@@ -119,9 +128,15 @@ export default function Checkout({
     onClose();
   };
 
+  // Bug #5: Lista completa de los 32 departamentos de Colombia + Bogotá D.C.
   const departments = [
-    'Bogotá D.C.', 'Antioquia', 'Valle del Cauca', 'Atlántico', 'Cundinamarca', 
-    'Santander', 'Bolívar', 'Caldas', 'Risaralda', 'Tolima', 'Norte de Santander'
+    'Bogotá D.C.', 'Amazonas', 'Antioquia', 'Arauca', 'Atlántico',
+    'Bolívar', 'Boyacá', 'Caldas', 'Caquetá', 'Casanare', 'Cauca',
+    'Cesar', 'Chocó', 'Córdoba', 'Cundinamarca', 'Guainía', 'Guaviare',
+    'Huila', 'La Guajira', 'Magdalena', 'Meta', 'Nariño',
+    'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda',
+    'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima',
+    'Valle del Cauca', 'Vaupés', 'Vichada'
   ];
 
   if (!isOpen) return null;

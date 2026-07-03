@@ -1,6 +1,7 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent } from 'react';
 import { Product } from '../types';
 import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, Heart, ArrowLeft, PhoneCall, Clock, Users, Flame, ShieldAlert, Gift, ThumbsUp } from 'lucide-react';
+import { syncOrderToDropi } from '../utils/api';
 
 interface ProductLandingPageProps {
   product: Product;
@@ -30,51 +31,30 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
-
-  // Determine the upsell product based on current product ID
+  // Bug #6: precio de upsell dinámico proporcional al precio real del producto (20% de descuento)
   const getUpsellConfig = (prodId: string) => {
     switch (prodId) {
-      case 'dante-01': // Cama -> Cepillo
-        return {
-          targetId: 'dante-02',
-          discountedPrice: 49000,
-          originalPrice: 69000,
-          phrase: "Dante dice: ¡La cama es perfecta, pero cepillarme con el Cepillo de Vapor antes de dormir evita los pelos en la cobija! Añádelo hoy con precio especial de súper amigo."
-        };
-      case 'dante-02': // Cepillo -> Juguete
-        return {
-          targetId: 'dante-03',
-          discountedPrice: 39000,
-          originalPrice: 54000,
-          phrase: "Dante dice: ¡Tener el pelaje limpio es genial, pero jugar con la Smart-Ball de premios mantiene mi cerebrito activo y me quita la ansiedad! Llévatelo hoy en combo."
-        };
-      case 'dante-03': // Juguete -> Arnés
-        return {
-          targetId: 'dante-05',
-          discountedPrice: 59000,
-          originalPrice: 75000,
-          phrase: "Dante dice: ¡Hacer ejercicio mental es genial, pero salir a pasear seguro con mi Arnés No-Pull reflectivo es lo mejor del día! Agrégalo hoy a precio exclusivo."
-        };
-      case 'dante-04': // Bebedero -> Cama
-        return {
-          targetId: 'dante-01',
-          discountedPrice: 79000,
-          originalPrice: 99000,
-          phrase: "Dante dice: ¡Estar bien hidratado es vital, pero tomar una siesta reparadora en mi Cama Nube es el paraíso! Añádela hoy y consiente a tu peludo al máximo."
-        };
-      case 'dante-05': // Arnés -> Cepillo
+      case 'dante-01':
+        return { targetId: 'dante-02', phrase: "Dante dice: ¡La cama es perfecta, pero cepillarme con el Cepillo de Vapor antes de dormir evita los pelos en la cobija! Añádelo hoy con precio especial de súiper amigo." };
+      case 'dante-02':
+        return { targetId: 'dante-03', phrase: "Dante dice: ¡Tener el pelaje limpio es genial, pero jugar con la Smart-Ball de premios mantiene mi cerebrito activo y me quita la ansiedad! Llévatelo hoy en combo." };
+      case 'dante-03':
+        return { targetId: 'dante-05', phrase: "Dante dice: ¡Hacer ejercicio mental es genial, pero salir a pasear seguro con mi Arnés No-Pull reflectivo es lo mejor del día! Agrégalo hoy a precio exclusivo." };
+      case 'dante-04':
+        return { targetId: 'dante-01', phrase: "Dante dice: ¡Estar bien hidratado es vital, pero tomar una siesta reparadora en mi Cama Nube es el paraíso! Añádela hoy y consiente a tu peludo al máximo." };
       default:
-        return {
-          targetId: 'dante-02',
-          discountedPrice: 49000,
-          originalPrice: 69000,
-          phrase: "Dante dice: ¡Pasear sin tirones es súper cómodo, pero al regresar a casa nada como un masaje relajante y vaporizado para remover el polvo de la calle!"
-        };
+        return { targetId: 'dante-02', phrase: "Dante dice: ¡Pasear sin tirones es súiper cómodo, pero al regresar a casa nada como un masaje relajante y vaporizado para remover el polvo de la calle!" };
     }
   };
 
-  const upsellConfig = getUpsellConfig(product.id);
-  const upsellProduct = allProducts.find(p => p.id === upsellConfig.targetId) || allProducts[1];
+  const upsellConfigBase = getUpsellConfig(product.id);
+  const upsellProduct = allProducts.find(p => p.id === upsellConfigBase.targetId) || allProducts[1];
+  // Bug #6: precio dинámico real del producto upsell con 20% de descuento
+  const upsellConfig = {
+    ...upsellConfigBase,
+    discountedPrice: upsellProduct ? Math.round(upsellProduct.price * 0.80) : 49000,
+    originalPrice: upsellProduct ? upsellProduct.price : 69000,
+  };
 
   const getPackageInfo = () => {
     switch (quantityOption) {
@@ -103,12 +83,68 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   const shippingCost = 20000;
   const totalPrice = subtotal + shippingCost;
 
-  const handleConfirmOrder = (e: FormEvent) => {
+  const handleConfirmOrder = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !city.trim() || !address.trim()) return;
+    // Bug #4: validación de celular colombiano
+    const phoneClean = phone.replace(/\s/g, '');
+    if (!name.trim()) { alert('Por favor ingresa tu nombre completo.'); return; }
+    if (!/^3\d{9}$/.test(phoneClean)) { alert('Ingresa un celular colombiano válido (10 dígitos, ej: 3001234567).'); return; }
+    if (!city.trim()) { alert('Por favor ingresa tu ciudad.'); return; }
+    if (address.trim().length < 6) { alert('Por favor ingresa una dirección completa (mínimo 6 caracteres).'); return; }
 
     const randomId = `DNT-AD-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderId(randomId);
+
+    // Bug #2: persistir la orden en localStorage igual que Checkout.tsx
+    // Bug #3: incluir dropiProductId real
+    const dropiToken = localStorage.getItem('dante_dropi_token') || '';
+    const dropiBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
+
+    const orderItems = itemsToCheckout.map(item => ({
+      id: item.product.id,
+      name: item.product.name,
+      price: item.price,
+      quantity: item.quantity,
+      dropiProductId: item.product.id.startsWith('dropi-')
+        ? item.product.id.replace('dropi-', '')
+        : (item.product as any).dropiId || item.product.id
+    }));
+
+    const newOrder: any = {
+      id: randomId,
+      customerName: name,
+      phone: phoneClean,
+      email: 'servicioalcliente@latiendadedante.com',
+      department,
+      city,
+      address,
+      indications,
+      items: orderItems,
+      totalPrice,
+      paymentMethod: 'contra_entrega',
+      paymentStatus: 'pending_cod',
+      dropiSyncStatus: 'pending',
+      date: new Date().toISOString()
+    };
+
+    // Bug #2: auto-sync con Dropi si hay token disponible
+    if (dropiToken.trim()) {
+      try {
+        const result = await syncOrderToDropi(newOrder, dropiToken, dropiBaseUrl);
+        newOrder.dropiSyncStatus = 'synced';
+        newOrder.dropiOrderId = result.id;
+      } catch {
+        newOrder.dropiSyncStatus = 'failed';
+      }
+    }
+
+    // Bug #2: guardar en localStorage para que aparezca en el Centro de Sincronización
+    const existingOrdersStr = localStorage.getItem('dante_orders') || '[]';
+    let existingOrders: any[] = [];
+    try { existingOrders = JSON.parse(existingOrdersStr); } catch { existingOrders = []; }
+    existingOrders.unshift(newOrder);
+    localStorage.setItem('dante_orders', JSON.stringify(existingOrders));
+
     setIsSuccess(true);
 
     if (onNewOrderAlert) {
@@ -123,9 +159,15 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
     onBackToStore();
   };
 
+  // Bug #5: Lista completa de los 32 departamentos de Colombia + Bogotá D.C.
   const departments = [
-    'Bogotá D.C.', 'Antioquia', 'Valle del Cauca', 'Atlántico', 'Cundinamarca', 
-    'Santander', 'Bolívar', 'Caldas', 'Risaralda', 'Tolima', 'Norte de Santander'
+    'Bogotá D.C.', 'Amazonas', 'Antioquia', 'Arauca', 'Atlántico',
+    'Bolívar', 'Boyacá', 'Caldas', 'Caquetá', 'Casanare', 'Cauca',
+    'Cesar', 'Chocó', 'Córdoba', 'Cundinamarca', 'Guainía', 'Guaviare',
+    'Huila', 'La Guajira', 'Magdalena', 'Meta', 'Nariño',
+    'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda',
+    'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima',
+    'Valle del Cauca', 'Vaupés', 'Vichada'
   ];
 
   // Specific dynamic product reviews generator for maximum social proof

@@ -292,7 +292,7 @@ export default function App() {
             onNewOrderAlert={(name, city, product) => triggerAlert(name, city, product, true)}
             onAddToCart={(prod) => {
               handleAddToCart(prod);
-              triggerAlert('¡Excelente elección!', city || 'Colombia', `${prod.name} agregado al carrito 🐾`, true);
+              triggerAlert('¡Excelente elección!', 'Colombia', `${prod.name} agregado al carrito 🐾`, true);
             }}
           />
         </div>
