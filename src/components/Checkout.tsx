@@ -3,6 +3,7 @@ import { Product } from '../types';
 import { X, Truck, CheckCircle2, ShieldCheck, PhoneCall } from 'lucide-react';
 import { syncOrderToDropi } from '../utils/api';
 import { trackInitiateCheckout, trackPurchase } from '../utils/tracking';
+import { colombiaDepartments, colombiaLocations } from '../utils/colombiaLocations';
 
 interface CheckoutProps {
   isOpen: boolean;
@@ -24,8 +25,8 @@ export default function Checkout({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');  // OPT #2: captura email real del comprador
-  const [department, setDepartment] = useState('Bogotá D.C.');
-  const [city, setCity] = useState('');
+  const [department, setDepartment] = useState(colombiaDepartments[0]);
+  const [city, setCity] = useState(colombiaLocations[colombiaDepartments[0]][0]);
   const [address, setAddress] = useState('');
   const [indications, setIndications] = useState('');
 
@@ -185,16 +186,7 @@ export default function Checkout({
     onClose();
   };
 
-  // Bug #5: Lista completa de los 32 departamentos de Colombia + Bogotá D.C.
-  const departments = [
-    'Bogotá D.C.', 'Amazonas', 'Antioquia', 'Arauca', 'Atlántico',
-    'Bolívar', 'Boyacá', 'Caldas', 'Caquetá', 'Casanare', 'Cauca',
-    'Cesar', 'Chocó', 'Córdoba', 'Cundinamarca', 'Guainía', 'Guaviare',
-    'Huila', 'La Guajira', 'Magdalena', 'Meta', 'Nariño',
-    'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda',
-    'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima',
-    'Valle del Cauca', 'Vaupés', 'Vichada'
-  ];
+  // Se obtienen los departamentos desde colombiaLocations.ts
 
   if (!isOpen) return null;
 
@@ -361,22 +353,28 @@ export default function Checkout({
                 <div className="grid grid-cols-2 gap-2.5">
                   <select
                     value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
+                    onChange={(e) => {
+                      const newDept = e.target.value;
+                      setDepartment(newDept);
+                      setCity(colombiaLocations[newDept][0]);
+                    }}
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
                   >
-                    {departments.map((dept) => (
+                    {colombiaDepartments.map((dept) => (
                       <option key={dept} value={dept}>{dept}</option>
                     ))}
                   </select>
 
-                  <input
-                    type="text"
+                  <select
                     required
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    placeholder="Ciudad / Municipio *"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
-                  />
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
+                  >
+                    {colombiaLocations[department]?.map((mun) => (
+                      <option key={mun} value={mun}>{mun}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
