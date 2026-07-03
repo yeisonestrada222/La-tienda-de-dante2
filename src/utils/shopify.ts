@@ -17,6 +17,14 @@ export async function fetchShopifyProducts(
   token: string,
   maxProducts: number = 50
 ): Promise<Product[]> {
+  // 0. Intentar primero el catálogo público JSON (/products.json) que no tiene restricciones CORS ni requiere token en producción
+  try {
+    const publicProducts = await fetchPublicShopifyCatalog();
+    if (publicProducts.length > 0) return publicProducts;
+  } catch (err: any) {
+    console.warn('[Dante Store] Consulta pública /products.json falló, intentando tokens API...', err?.message);
+  }
+
   const cleanToken = token.trim();
 
   // Si el token es de tipo Admin (empieza por shpss_ o shpat_), intentamos REST Admin API
@@ -25,12 +33,39 @@ export async function fetchShopifyProducts(
       const adminProducts = await fetchAdminProductsREST(cleanToken);
       if (adminProducts.length > 0) return adminProducts;
     } catch (err: any) {
-      console.warn('[Dante Store] Consulta Admin API REST falló, intentando GraphQL Storefront...', err.message);
+      console.warn('[Dante Store] Consulta Admin API REST falló, intentando GraphQL Storefront...', err?.message);
     }
   }
 
   // Intentar Storefront GraphQL API
   return await fetchStorefrontProductsGraphQL(cleanToken, maxProducts);
+}
+
+/**
+ * Consulta el endpoint público de Shopify /products.json para obtener los productos importados de Dropi sin error CORS.
+ */
+export async function fetchPublicShopifyCatalog(): Promise<Product[]> {
+  const endpoints = [
+    '/products.json?limit=250',
+    `https://${SHOPIFY_STORE_DOMAIN}/products.json?limit=250`,
+    'https://latiendadedante.com/products.json?limit=250'
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (response.ok) {
+        const json = await response.json();
+        const rawProducts: any[] = json.products || [];
+        if (rawProducts.length > 0) {
+          return mapShopifyRestProducts(rawProducts);
+        }
+      }
+    } catch (e) {
+      // Continuar con el siguiente endpoint
+    }
+  }
+  return [];
 }
 
 /**
@@ -54,6 +89,10 @@ async function fetchAdminProductsREST(token: string): Promise<Product[]> {
   const json = await response.json();
   const rawProducts: any[] = json.products || [];
 
+  return mapShopifyRestProducts(rawProducts);
+}
+
+function mapShopifyRestProducts(rawProducts: any[]): Product[] {
   return rawProducts.map((p, index) => {
     const variant = p.variants?.[0] || {};
     const price = Math.round(parseFloat(variant.price || '0'));

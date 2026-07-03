@@ -13,7 +13,7 @@ import { INITIAL_PRODUCTS, INITIAL_REVIEWS } from './data';
 import { Product, Review, ContactMessage } from './types';
 import { Flame, Sparkles, ShoppingBag } from 'lucide-react';
 import { verifyWompiTransaction, syncOrderToDropi } from './utils/api';
-import { fetchShopifyProducts } from './utils/shopify';
+import { fetchShopifyProducts, fetchPublicShopifyCatalog } from './utils/shopify';
 import { fetchDropiProducts } from './utils/dropi';
 
 const DEFAULT_SHOPIFY_SECRET = import.meta.env.VITE_SHOPIFY_TOKEN || '';
@@ -29,6 +29,19 @@ export default function App() {
   useEffect(() => {
     async function loadRealProducts() {
       setIsLoadingProducts(true);
+
+      // 0. Consultar catálogo público de Shopify (/products.json) si estamos en la tienda en vivo
+      try {
+        const publicCatalog = await fetchPublicShopifyCatalog();
+        if (publicCatalog.length > 0) {
+          setProducts(publicCatalog);
+          setShopifyConnected(true);
+          setIsLoadingProducts(false);
+          return;
+        }
+      } catch (e) {
+        console.warn('[Dante Store] No se obtuvo catálogo público /products.json:', e);
+      }
 
       // 1. Verificar si hay token de Dropi configurado
       const dropiToken = localStorage.getItem('dante_dropi_token');
