@@ -8,9 +8,10 @@ interface ProductLandingPageProps {
   onBackToStore: () => void;
   onClearCart: () => void;
   onNewOrderAlert?: (name: string, city: string, productName: string) => void;
+  onAddToCart?: (product: Product) => void;
 }
 
-export default function ProductLandingPage({ product, allProducts, onBackToStore, onClearCart, onNewOrderAlert }: ProductLandingPageProps) {
+export default function ProductLandingPage({ product, allProducts, onBackToStore, onClearCart, onNewOrderAlert, onAddToCart }: ProductLandingPageProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [department, setDepartment] = useState('Bogotá D.C.');
@@ -206,12 +207,6 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-20">
       
-      {/* Upper Navigation Indicator (Simulated Ad Source) */}
-      <div className="bg-amber-600 text-black text-center py-2 px-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2">
-        <Sparkles className="h-4 w-4 animate-bounce" />
-        <span>Oferta Publicitaria Exclusiva de Dante • Envío Gratis Contra Entrega 🇨🇴</span>
-      </div>
-
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
         {/* Back Button */}
@@ -309,24 +304,21 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                     {product.description}
                   </p>
 
-                  {/* Ads / Social Sharing Campaign Link */}
-                  <div className="pt-2 flex items-center justify-between bg-slate-950/80 border border-slate-800 rounded-xl p-3">
-                    <div className="flex items-center space-x-2 text-xs text-slate-400 truncate mr-2">
-                      <span className="text-amber-500 font-bold shrink-0">📢 Enlace para Ads:</span>
-                      <span className="font-mono text-[11px] truncate text-slate-300">?product={product.id}</span>
+                  {/* Add to Cart Option */}
+                  {onAddToCart && (
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onAddToCart(product);
+                        }}
+                        className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500 text-amber-400 hover:text-amber-300 font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 shadow-md transition-all cursor-pointer"
+                      >
+                        <ShoppingBag className="h-4 w-4" />
+                        <span>Añadir al Carrito y Seguir Viendo</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        const url = `${window.location.origin}${window.location.pathname}?product=${encodeURIComponent(product.id)}`;
-                        navigator.clipboard.writeText(url);
-                        setCopiedLink(true);
-                        setTimeout(() => setCopiedLink(false), 2500);
-                      }}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shrink-0 border border-slate-700"
-                    >
-                      <span>{copiedLink ? '✅ ¡Copiado!' : '📎 Copiar URL Pauta'}</span>
-                    </button>
-                  </div>
+                  )}
                 </div>
 
               </div>
