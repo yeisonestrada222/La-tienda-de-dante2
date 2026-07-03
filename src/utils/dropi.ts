@@ -149,12 +149,28 @@ function mapDropiToProduct(raw: DropiProduct, index: number): Product {
   // Imagen principal
   const imageUrl = extractImage(raw) || 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=600';
   
-  // Categoría
-  let category = 'Productos Dropi';
+  // Categoría inteligente
+  let category = '';
   if (typeof raw.category === 'string') category = raw.category;
   else if (raw.category && typeof raw.category === 'object' && 'name' in raw.category) category = raw.category.name;
   else if (typeof raw.categoria === 'string') category = raw.categoria;
   else if (raw.categoria && typeof raw.categoria === 'object' && 'nombre' in raw.categoria) category = raw.categoria.nombre;
+
+  // Si Dropi no envía una categoría clara, clasificamos de forma inteligente por palabras clave en el nombre
+  if (!category || category === 'Productos Dropi' || category === 'Sin categoría') {
+    const n = name.toLowerCase();
+    if (n.includes('perro') || n.includes('gato') || n.includes('mascota') || n.includes('pelo') || n.includes('cepillo') || n.includes('correa') || n.includes('collar') || n.includes('juguete')) {
+      category = 'Mascotas & Cuidado';
+    } else if (n.includes('hogar') || n.includes('cocina') || n.includes('limpieza') || n.includes('organizador') || n.includes('luz') || n.includes('lampara')) {
+      category = 'Hogar & Vida';
+    } else if (n.includes('salud') || n.includes('belleza') || n.includes('facial') || n.includes('masaje') || n.includes('depil')) {
+      category = 'Salud & Bienestar';
+    } else if (index < 2) {
+      category = 'Favoritos de Dante';
+    } else {
+      category = 'Novedades Dropi';
+    }
+  }
 
   return {
     id: `dropi-${raw.id}`,
@@ -166,10 +182,10 @@ function mapDropiToProduct(raw: DropiProduct, index: number): Product {
     imageUrl,
     badge: index === 0 ? '⭐ Destacado' : undefined,
     features: [
-      '✅ Producto verificado con stock en bodega Dropi',
+      '✅ Producto verificado con stock en bodega principal',
       '🚚 Envío contra entrega a toda Colombia',
-      '🔒 Pago seguro con Wompi o contra entrega',
-      '📦 Despacho en 1-3 días hábiles',
+      '🔒 Pago 100% seguro al recibir en tu casa',
+      '📦 Despacho express en 24/48 horas',
     ],
     specs: {
       'ID Dropi': String(raw.id),

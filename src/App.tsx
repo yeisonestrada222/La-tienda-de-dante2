@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Catalog from './components/Catalog';
@@ -118,6 +118,27 @@ export default function App() {
   
   // Active UI Navigation state
   const [activeSection, setActiveSection] = useState('inicio');
+  const [categoriesTick, setCategoriesTick] = useState(0);
+
+  useEffect(() => {
+    const handleCatUpdate = () => setCategoriesTick(n => n + 1);
+    window.addEventListener('dante_categories_updated', handleCatUpdate);
+    return () => window.removeEventListener('dante_categories_updated', handleCatUpdate);
+  }, []);
+
+  const displayProducts = useMemo(() => {
+    try {
+      const customCats = JSON.parse(localStorage.getItem('dante_custom_categories') || '{}');
+      return products.map(p => {
+        if (customCats[p.id]) {
+          return { ...p, category: customCats[p.id] };
+        }
+        return p;
+      });
+    } catch {
+      return products;
+    }
+  }, [products, categoriesTick]);
 
   // Interactive Live Purchase Notification Alert
   const [liveAlert, setLiveAlert] = useState<{ name: string; city: string; product: string; time: string; isReal?: boolean } | null>(null);
@@ -265,7 +286,7 @@ export default function App() {
         <div className="pt-24 flex-1">
           <ProductLandingPage
             product={activeLandingProduct}
-            allProducts={products}
+            allProducts={displayProducts}
             onBackToStore={handleCloseLandingProduct}
             onClearCart={() => setCart([])}
             onNewOrderAlert={(name, city, product) => triggerAlert(name, city, product, true)}
@@ -311,7 +332,7 @@ export default function App() {
           {/* Catalog & Dropshipping Margins Section */}
           {!isLoadingProducts && (
             <Catalog
-              products={products}
+              products={displayProducts}
               onAddToCart={handleAddToCart}
               onOpenCheckoutWithProduct={handleOpenCheckoutWithProduct}
               onOpenLandingProduct={handleOpenLandingProduct}
@@ -351,7 +372,7 @@ export default function App() {
       {/* FLOATING MODAL: Shopify & Dropi Integration Hub */}
       {isIntegrationHubOpen && (
         <IntegrationHub
-          products={products}
+          products={displayProducts}
           onClose={() => setIsIntegrationHubOpen(false)}
         />
       )}

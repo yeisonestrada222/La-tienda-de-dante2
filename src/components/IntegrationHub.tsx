@@ -65,6 +65,7 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
   
   // Product mappings
   const [productDropiIds, setProductDropiIds] = useState<{ [key: string]: string }>({});
+  const [customCategories, setCustomCategories] = useState<{ [key: string]: string }>({});
 
   // Local Orders
   const [orders, setOrders] = useState<LocalOrder[]>([]);
@@ -88,6 +89,13 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
       setProductDropiIds(JSON.parse(savedDropiIds));
     } catch (e) {
       setProductDropiIds({});
+    }
+
+    const savedCategories = localStorage.getItem('dante_custom_categories') || '{}';
+    try {
+      setCustomCategories(JSON.parse(savedCategories));
+    } catch (e) {
+      setCustomCategories({});
     }
 
     const savedOrdersStr = localStorage.getItem('dante_orders') || '[]';
@@ -126,6 +134,13 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
     const updated = { ...productDropiIds, [productId]: val };
     setProductDropiIds(updated);
     localStorage.setItem('dante_product_dropi_ids', JSON.stringify(updated));
+  };
+
+  const handleCategoryChange = (productId: string, val: string) => {
+    const updated = { ...customCategories, [productId]: val };
+    setCustomCategories(updated);
+    localStorage.setItem('dante_custom_categories', JSON.stringify(updated));
+    window.dispatchEvent(new Event('dante_categories_updated'));
   };
 
   const handleSyncWithDropi = async (orderId: string) => {
@@ -759,9 +774,9 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                 {/* Header */}
                 <div className="grid grid-cols-12 gap-2 bg-slate-900 p-3.5 font-bold text-slate-300 uppercase tracking-wider text-[10px]">
                   <div className="col-span-3">Producto Dante</div>
-                  <div className="col-span-2 text-right">Costo Dropi</div>
-                  <div className="col-span-3 text-center">Precio de Venta</div>
-                  <div className="col-span-2 text-center">ID Producto Dropi</div>
+                  <div className="col-span-2 text-center">Precio de Venta</div>
+                  <div className="col-span-2 text-center">ID Dropi</div>
+                  <div className="col-span-3 text-center">Categoría en Catálogo</div>
                   <div className="col-span-2 text-right">Ganancia Neta</div>
                 </div>
 
@@ -772,26 +787,26 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                     const profit = priceVal - p.dropiCost;
                     const marginPercent = ((profit / priceVal) * 100).toFixed(0);
                     const dropiIdVal = productDropiIds[p.id] || '';
+                    const categoryVal = customCategories[p.id] || p.category;
 
                     return (
                       <div key={p.id} className="grid grid-cols-12 gap-2 p-3.5 items-center">
                         <div className="col-span-3 flex items-center space-x-3">
                           <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded object-cover flex-shrink-0" referrerPolicy="no-referrer" />
-                          <span className="font-semibold text-white truncate">{p.name}</span>
-                        </div>
-                        
-                        <div className="col-span-2 text-right text-slate-400 font-mono">
-                          ${p.dropiCost.toLocaleString('es-CO')}
+                          <div className="truncate">
+                            <span className="font-semibold text-white block truncate">{p.name}</span>
+                            <span className="text-[9px] text-slate-500 font-mono">${p.dropiCost.toLocaleString('es-CO')} costo</span>
+                          </div>
                         </div>
 
-                        <div className="col-span-3 text-center px-4">
+                        <div className="col-span-2 text-center px-2">
                           <div className="relative flex items-center">
-                            <span className="absolute left-3 text-slate-500 font-mono">$</span>
+                            <span className="absolute left-2 text-slate-500 font-mono text-[10px]">$</span>
                             <input
                               type="number"
                               value={priceVal || ''}
                               onChange={(e) => handlePriceChange(p.id, Number(e.target.value))}
-                              className="w-full bg-slate-900 border border-slate-850 rounded-lg pl-6 pr-3 py-1.5 text-center text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                              className="w-full bg-slate-900 border border-slate-850 rounded-lg pl-5 pr-2 py-1.5 text-center text-white font-mono text-xs focus:outline-none focus:border-amber-500"
                             />
                           </div>
                         </div>
@@ -806,9 +821,19 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                           />
                         </div>
 
+                        <div className="col-span-3 text-center px-1">
+                          <input
+                            type="text"
+                            value={categoryVal}
+                            onChange={(e) => handleCategoryChange(p.id, e.target.value)}
+                            placeholder="Ej. Favoritos de Dante"
+                            className="w-full bg-slate-900 border border-slate-850 rounded-lg px-2 py-1.5 text-center text-amber-400 font-sans font-bold text-xs focus:outline-none focus:border-amber-500"
+                          />
+                        </div>
+
                         <div className="col-span-2 text-right">
                           <span className="font-bold text-emerald-400 font-mono text-sm block">
-                            +${profit.toLocaleString('es-CO')} COP
+                            +${profit.toLocaleString('es-CO')}
                           </span>
                           <span className="text-[9px] text-slate-500 font-mono uppercase block">
                             Retorno: {marginPercent}%

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Product } from '../types';
 import { Star, ShoppingCart, CheckCircle2, MessageCircle, Sparkles } from 'lucide-react';
 
@@ -13,11 +13,28 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [activeDanteTipId, setActiveDanteTipId] = useState<string | null>(null);
 
-  const categories = ['Todos', 'Favoritos de Dante', 'Cuidado Higiene', 'Juguetes & Mente', 'Hogar', 'Paseo Seguro'];
+  // Generamos categorías reales y dinámicas según los productos de Dropi / Shopify
+  const categories = useMemo(() => {
+    const setCats = new Set<string>();
+    products.forEach(p => {
+      if (p.category && p.category !== 'Favoritos de Dante' && p.category !== 'Todos') {
+        setCats.add(p.category);
+      }
+    });
+    return ['Todos', 'Favoritos de Dante', ...Array.from(setCats)];
+  }, [products]);
 
-  const filteredProducts = selectedCategory === 'Todos'
-    ? products
-    : products.filter(p => p.category === selectedCategory);
+  // Filtrado inteligente: si eligen Favoritos de Dante, mostramos categoría explícita O productos destacados/top ventas
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'Todos') return products;
+    if (selectedCategory === 'Favoritos de Dante') {
+      const explicitFavs = products.filter(p => p.category === 'Favoritos de Dante' || p.badge?.includes('Destacado'));
+      if (explicitFavs.length > 0) return explicitFavs;
+      // Si ninguno tiene la etiqueta explícita, mostramos los 4 mejores para que nunca aparezca vacío
+      return products.slice(0, 4);
+    }
+    return products.filter(p => p.category === selectedCategory);
+  }, [products, selectedCategory]);
 
   const toggleDanteTip = (productId: string) => {
     setActiveDanteTipId(prev => prev === productId ? null : productId);
