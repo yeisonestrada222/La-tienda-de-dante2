@@ -95,6 +95,24 @@ export default function App() {
   // Active Landing Product for campaign funnel (Subpágina dedicada)
   const [activeLandingProduct, setActiveLandingProduct] = useState<Product | null>(null);
 
+  // Detectar si la URL tiene parámetro ?product=... o #producto/... para campañas directas en Ads
+  useEffect(() => {
+    if (products.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get('product') || params.get('p') || window.location.hash.replace(/^#(producto|product)\//i, '');
+    if (target && !activeLandingProduct) {
+      const decoded = decodeURIComponent(target).toLowerCase();
+      const match = products.find(p => 
+        p.id.toLowerCase() === decoded || 
+        p.id.toLowerCase().endsWith(decoded) || 
+        p.name.toLowerCase().includes(decoded)
+      );
+      if (match) {
+        setActiveLandingProduct(match);
+      }
+    }
+  }, [products]);
+
   // Integration Hub state
   const [isIntegrationHubOpen, setIsIntegrationHubOpen] = useState(false);
   
@@ -325,6 +343,18 @@ export default function App() {
 
   const handleOpenLandingProduct = (product: Product) => {
     setActiveLandingProduct(product);
+    try {
+      window.history.pushState({}, '', `?product=${encodeURIComponent(product.id)}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {}
+  };
+
+  const handleCloseLandingProduct = () => {
+    setActiveLandingProduct(null);
+    try {
+      window.history.pushState({}, '', window.location.pathname);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {}
   };
 
   return (
@@ -348,7 +378,7 @@ export default function App() {
           <ProductLandingPage
             product={activeLandingProduct}
             allProducts={products}
-            onBackToStore={() => setActiveLandingProduct(null)}
+            onBackToStore={handleCloseLandingProduct}
             onClearCart={() => setCart([])}
             onNewOrderAlert={(name, city, product) => triggerAlert(name, city, product, true)}
           />

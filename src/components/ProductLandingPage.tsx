@@ -28,6 +28,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   const [isUpsellAdded, setIsUpsellAdded] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Determine the upsell product based on current product ID
   const getUpsellConfig = (prodId: string) => {
@@ -307,6 +308,25 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   <p className="text-slate-300 text-sm leading-relaxed">
                     {product.description}
                   </p>
+
+                  {/* Ads / Social Sharing Campaign Link */}
+                  <div className="pt-2 flex items-center justify-between bg-slate-950/80 border border-slate-800 rounded-xl p-3">
+                    <div className="flex items-center space-x-2 text-xs text-slate-400 truncate mr-2">
+                      <span className="text-amber-500 font-bold shrink-0">📢 Enlace para Ads:</span>
+                      <span className="font-mono text-[11px] truncate text-slate-300">?product={product.id}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}${window.location.pathname}?product=${encodeURIComponent(product.id)}`;
+                        navigator.clipboard.writeText(url);
+                        setCopiedLink(true);
+                        setTimeout(() => setCopiedLink(false), 2500);
+                      }}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shrink-0 border border-slate-700"
+                    >
+                      <span>{copiedLink ? '✅ ¡Copiado!' : '📎 Copiar URL Pauta'}</span>
+                    </button>
+                  </div>
                 </div>
 
               </div>
