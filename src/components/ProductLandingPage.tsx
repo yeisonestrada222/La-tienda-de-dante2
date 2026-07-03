@@ -219,49 +219,52 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
         </button>
 
         {isSuccess ? (
-          /* SUCCESS PANEL */
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-12 text-center max-w-2xl mx-auto space-y-6 shadow-2xl my-10">
-            <div className="inline-block p-4 bg-emerald-500/10 rounded-full text-emerald-400 animate-bounce">
-              <CheckCircle2 className="h-16 w-16" />
+          /* SUCCESS PANEL & RECOMPRA VIP */
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 text-center max-w-xl mx-auto space-y-6 shadow-2xl my-8">
+            <div className="inline-flex p-3 bg-emerald-500/10 rounded-full text-emerald-400">
+              <CheckCircle2 className="h-12 w-12" />
             </div>
 
-            <div>
-              <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold bg-emerald-950/40 border border-emerald-900/30 px-3 py-1 rounded-md">
-                ¡Pedido Realizado Exitosamente!
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold bg-emerald-950/50 border border-emerald-800/40 px-3 py-1 rounded-md">
+                ¡Pedido Confirmado!
               </span>
-              <h2 className="font-sans font-extrabold text-3xl text-white mt-4">
-                ID de Orden: {orderId}
+              <h2 className="font-sans font-extrabold text-2xl text-white mt-2">
+                Orden #{orderId}
               </h2>
-              <p className="text-slate-400 text-sm mt-3 max-w-md mx-auto leading-relaxed">
-                ¡Muchas gracias <strong>{name}</strong>! Tu pedido se ha sincronizado de manera exitosa con el fulfillment nacional de <strong>Dropi</strong>. No arriesgas nada, pagas al recibir.
+              <p className="text-slate-300 text-xs max-w-sm mx-auto leading-normal">
+                ¡Gracias <strong>{name}</strong>! Preparamos tu despacho hoy. Pagas únicamente en efectivo al recibir en tu domicilio.
               </p>
             </div>
 
-            {/* Simulated WhatsApp Confirmation block */}
-            <div className="p-6 bg-slate-950 border border-slate-800 rounded-2xl w-full max-w-md mx-auto space-y-4">
-              <div className="flex items-center justify-center space-x-2 text-xs text-amber-500 font-extrabold uppercase">
-                <PhoneCall className="h-4 w-4" />
-                <span>Confirmación Express por WhatsApp</span>
+            {/* VIP RECOMPRA COUPON */}
+            <div className="p-5 bg-gradient-to-br from-amber-500/15 to-amber-500/5 border border-amber-500/30 rounded-2xl text-center space-y-2">
+              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-extrabold block">
+                🎁 Regalo Exclusivo para Recompra VIP
+              </span>
+              <h4 className="text-white font-bold text-sm">¡15% OFF en tu próximo pedido!</h4>
+              <div className="inline-block px-5 py-2 bg-slate-950 border border-amber-500/50 rounded-xl font-mono text-amber-400 font-extrabold tracking-widest text-lg select-all">
+                DANTE15
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                ¡Acelera el empaque de Dante! Confirma tu dirección por WhatsApp con un solo clic. Esto nos ayuda a despachar tu pedido hoy mismo.
-              </p>
-              
-              <a
-                href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20con%20ID%20${orderId}%20de%20valor%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all text-center"
-              >
-                <span>Enviar Confirmación Directa</span>
-              </a>
+              <p className="text-[10px] text-slate-400">Tómale captura o cópialo para usarlo en cualquier producto de la tienda.</p>
             </div>
+
+            {/* Express WhatsApp Confirmation */}
+            <a
+              href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20%23${orderId}%20de%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all block text-center shadow-lg shadow-emerald-500/20"
+            >
+              <PhoneCall className="h-4 w-4" />
+              <span>Confirmar Dirección por WhatsApp</span>
+            </a>
 
             <button
               onClick={handleFinish}
-              className="px-8 py-3 bg-slate-950 hover:bg-slate-850 text-slate-300 text-xs font-bold uppercase tracking-wider rounded-xl border border-slate-800"
+              className="w-full py-3 bg-slate-950 hover:bg-slate-850 text-slate-300 text-xs font-bold uppercase tracking-wider rounded-xl border border-slate-800 transition-all cursor-pointer"
             >
-              Cerrar y ver más productos
+              Volver y ver más productos
             </button>
           </div>
         ) : (
@@ -323,34 +326,30 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
 
               </div>
 
-              {/* Technical features bento */}
-              <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 space-y-4">
-                <h3 className="font-sans font-bold text-sm text-white uppercase tracking-wider flex items-center space-x-2">
-                  <span>✨ ¿Por qué a Dante le encanta este producto?</span>
+              {/* Compact Features & Specs */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <h3 className="font-sans font-bold text-xs text-amber-500 uppercase tracking-wider">
+                  ✨ Lo que debes saber:
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {product.features.map((feat, idx) => (
-                    <div key={idx} className="p-4 bg-slate-950 rounded-xl border border-slate-900 flex items-start space-x-3">
-                      <div className="p-1 bg-amber-500/10 text-amber-500 rounded-md mt-0.5">
-                        <CheckCircle2 className="h-4 w-4" />
-                      </div>
-                      <span className="text-slate-300 text-xs leading-relaxed">{feat}</span>
+                    <div key={idx} className="flex items-center space-x-2 text-xs text-slate-300">
+                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span>{feat}</span>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              {/* Ficha técnica */}
-              <div className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-6">
-                <h3 className="font-sans font-bold text-sm text-white uppercase tracking-wider mb-3">Ficha Técnica Oficial:</h3>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {Object.entries(product.specs).map(([key, value], idx) => (
-                    <div key={idx} className="p-3 bg-slate-950/60 rounded-xl border border-slate-900 flex flex-col">
-                      <span className="text-slate-500 font-mono uppercase text-[9px]">{key}</span>
-                      <span className="text-slate-200 font-bold mt-1">{value}</span>
-                    </div>
-                  ))}
-                </div>
+                {Object.keys(product.specs).length > 0 && (
+                  <div className="border-t border-slate-800/80 pt-3 flex flex-wrap gap-2 text-[11px]">
+                    {Object.entries(product.specs).map(([key, value], idx) => (
+                      <span key={idx} className="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-slate-400">
+                        <strong className="text-slate-200">{key}:</strong> {value}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Product-Specific Real Customer Reviews (Ultimate Social Proof) */}
@@ -396,345 +395,227 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   ))}
                 </div>
               </div>
-
             </div>
 
-            {/* Right Column: Checkout Direct Form & Upsell Card (5/12) */}
-            <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+            {/* Right Column: Fast Checkout Direct Form & Clean Upsell (5/12) */}
+            <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24">
               
-              {/* Checkout Form Card */}
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5">
                 
-                <div className="flex items-center space-x-2.5 border-b border-slate-800 pb-4">
-                  <div className="bg-amber-500 text-black p-1.5 rounded-lg text-sm">
-                    🚚
+                {/* Header & Clean Trust Badge */}
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">🚚</span>
+                    <div>
+                      <h3 className="font-sans font-extrabold text-sm text-white leading-none">
+                        Despacho Contra Entrega
+                      </h3>
+                      <span className="text-[10px] text-emerald-400 font-semibold">🔒 Pagas al recibir en tu casa</span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-sans font-extrabold text-sm uppercase tracking-wider text-white">
-                      Despacho Contra Entrega
-                    </h3>
-                    <p className="text-[10px] text-slate-400">Pagas en efectivo al recibir en casa</p>
-                  </div>
+                  <span className="px-2 py-1 bg-slate-950 border border-slate-800 text-[10px] text-slate-400 font-mono rounded-lg">
+                    Envío 24/48h
+                  </span>
                 </div>
 
-                {/* LIVE URGENCY & SCARCITY TRIGGERS */}
-                <div className="bg-slate-950 border border-red-500/20 rounded-2xl p-4 space-y-3.5 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 h-[3px] bg-gradient-to-r from-red-500 via-amber-500 to-red-500 w-full animate-pulse" />
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center space-x-1.5 text-red-400 font-extrabold text-[10px] uppercase tracking-wider">
-                      <Flame className="h-4 w-4 text-red-500 animate-pulse" />
-                      <span>¡Demanda Súper Alta!</span>
-                    </span>
-                    <span className="flex items-center space-x-1 text-amber-500 font-mono text-xs font-extrabold">
-                      <Clock className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: '6s' }} />
-                      <span>{formatTimer(timeLeft)}</span>
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-medium font-sans">Inventario disponible en bodega:</span>
-                      <span className="text-red-400 font-extrabold uppercase font-mono">{stockLeft} Unidades</span>
-                    </div>
-
-                    {/* Stock level progress bar */}
-                    <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-850">
-                      <div 
-                        className="bg-gradient-to-r from-red-500 to-amber-500 h-full rounded-full transition-all duration-1000" 
-                        style={{ width: `${(stockLeft / 10) * 100}%` }}
-                      />
-                    </div>
-
-                    <div className="flex items-center space-x-2 text-[10px] text-slate-400 leading-none mt-1">
-                      <Users className="h-3.5 w-3.5 text-amber-500" />
-                      <span>Hay <strong className="text-white font-bold">{viewers} personas</strong> mirando este producto ahora mismo.</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* MULTI-BUY PACKAGE SELECTOR (LLEVA MÁS, PAGA MENOS) */}
-                <div className="space-y-2.5">
-                  <label className="block text-[10px] text-amber-500 uppercase font-extrabold tracking-wider">
-                    🎁 Paso 1: Selecciona tu Oferta Exclusiva:
+                {/* CLEAN MULTI-BUY SELECTOR */}
+                <div className="space-y-2">
+                  <label className="block text-[11px] text-slate-300 font-bold">
+                    Selecciona cantidad:
                   </label>
-                  <div className="grid grid-cols-1 gap-2.5">
+                  <div className="grid grid-cols-1 gap-2">
                     
-                    {/* Package 1: 1 Unit */}
+                    {/* 1 Unit */}
                     <button
                       type="button"
                       onClick={() => setQuantityOption('1')}
-                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                         quantityOption === '1'
-                          ? 'bg-amber-500/10 border-amber-500 text-white shadow-lg'
+                          ? 'bg-amber-500/10 border-amber-500 text-white'
                           : 'bg-slate-950 border-slate-850 text-slate-400 hover:border-slate-800'
                       }`}
                     >
-                      <div className="flex items-center space-x-2.5">
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                           quantityOption === '1' ? 'border-amber-500 bg-amber-500' : 'border-slate-700 bg-slate-950'
                         }`}>
-                          {quantityOption === '1' && <span className="w-2 h-2 rounded-full bg-black" />}
+                          {quantityOption === '1' && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
                         </div>
-                        <div>
-                          <span className="block text-xs font-bold text-white">Llevar 1 Unidad</span>
-                          <span className="text-[10px] text-slate-400">Precio de lanzamiento</span>
-                        </div>
+                        <span className="text-xs font-bold text-white">1 Unidad</span>
                       </div>
-                      <span className="font-mono text-xs font-bold text-amber-500">${product.price.toLocaleString('es-CO')} COP</span>
+                      <span className="font-mono text-xs font-bold text-amber-500">${product.price.toLocaleString('es-CO')}</span>
                     </button>
 
-                    {/* Package 2: 2 Units (15% OFF) */}
+                    {/* 2 Units (-15%) */}
                     <button
                       type="button"
                       onClick={() => setQuantityOption('2')}
-                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer relative overflow-hidden ${
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer relative overflow-hidden ${
                         quantityOption === '2'
-                          ? 'bg-amber-500/15 border-amber-500 text-white shadow-lg'
+                          ? 'bg-amber-500/15 border-amber-500 text-white shadow-md'
                           : 'bg-slate-950 border-slate-850 text-slate-400 hover:border-slate-800'
                       }`}
                     >
-                      {/* Popular Badge */}
-                      <div className="absolute top-0 right-0 bg-red-500 text-[8px] font-extrabold text-white px-2 py-0.5 rounded-bl-lg uppercase tracking-wider">
-                        MÁS POPULAR • 15% OFF
-                      </div>
-
-                      <div className="flex items-center space-x-2.5">
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      <span className="absolute top-0 right-0 bg-amber-500 text-black text-[8px] font-extrabold px-2 py-0.5 rounded-bl-lg uppercase">
+                        ⚡ Más Vendido (-15%)
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                           quantityOption === '2' ? 'border-amber-500 bg-amber-500' : 'border-slate-700 bg-slate-950'
                         }`}>
-                          {quantityOption === '2' && <span className="w-2 h-2 rounded-full bg-black" />}
+                          {quantityOption === '2' && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
                         </div>
                         <div>
-                          <span className="block text-xs font-bold text-white">Llevar 2 Unidades (¡Recomendado!)</span>
-                          <span className="text-[10px] text-emerald-400 font-bold">Ahorras 15% en cada una</span>
+                          <span className="block text-xs font-bold text-white">2 Unidades</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="block font-mono text-xs font-bold text-amber-500">${(Math.round(product.price * 0.85) * 2).toLocaleString('es-CO')} COP</span>
-                        <span className="block text-[9px] text-slate-500 line-through font-mono">${(product.price * 2).toLocaleString('es-CO')}</span>
+                        <span className="block font-mono text-xs font-bold text-amber-500">${(Math.round(product.price * 0.85) * 2).toLocaleString('es-CO')}</span>
                       </div>
                     </button>
 
-                    {/* Package 3: 3 Units (25% OFF) */}
+                    {/* 3 Units (-25%) */}
                     <button
                       type="button"
                       onClick={() => setQuantityOption('3')}
-                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer relative overflow-hidden ${
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer relative overflow-hidden ${
                         quantityOption === '3'
-                          ? 'bg-amber-500/20 border-amber-500 text-white shadow-lg'
+                          ? 'bg-amber-500/20 border-amber-500 text-white shadow-md'
                           : 'bg-slate-950 border-slate-850 text-slate-400 hover:border-slate-800'
                       }`}
                     >
-                      {/* Best Value Badge */}
-                      <div className="absolute top-0 right-0 bg-emerald-500 text-[8px] font-extrabold text-black px-2 py-0.5 rounded-bl-lg uppercase tracking-wider">
-                        SÚPER AHORRO • 25% OFF
-                      </div>
-
-                      <div className="flex items-center space-x-2.5">
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      <span className="absolute top-0 right-0 bg-emerald-500 text-black text-[8px] font-extrabold px-2 py-0.5 rounded-bl-lg uppercase">
+                        🔥 Mejor Precio (-25%)
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                           quantityOption === '3' ? 'border-amber-500 bg-amber-500' : 'border-slate-700 bg-slate-950'
                         }`}>
-                          {quantityOption === '3' && <span className="w-2 h-2 rounded-full bg-black" />}
+                          {quantityOption === '3' && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
                         </div>
                         <div>
-                          <span className="block text-xs font-bold text-white">Llevar 3 Unidades (¡Mejor Valor!)</span>
-                          <span className="text-[10px] text-emerald-400 font-bold">Ahorras 25% en cada una</span>
+                          <span className="block text-xs font-bold text-white">3 Unidades</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="block font-mono text-xs font-bold text-amber-500">${(Math.round(product.price * 0.75) * 3).toLocaleString('es-CO')} COP</span>
-                        <span className="block text-[9px] text-slate-500 line-through font-mono">${(product.price * 3).toLocaleString('es-CO')}</span>
+                        <span className="block font-mono text-xs font-bold text-amber-500">${(Math.round(product.price * 0.75) * 3).toLocaleString('es-CO')}</span>
                       </div>
                     </button>
 
                   </div>
                 </div>
 
-                {/* UP-SELL CARD: Dante's Recommendation "Add something else!" */}
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 sm:p-5 relative overflow-hidden space-y-3">
-                  
-                  {/* Paw Print Deco */}
-                  <div className="absolute -bottom-4 -right-4 opacity-5 text-amber-500 text-7xl font-bold">
-                    🐾
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-[9px] font-mono text-amber-400 uppercase font-bold animate-pulse">
-                      <Sparkles className="h-3 w-3" />
-                      <span>¡Paso 2: Combo Aprobado por Dante!</span>
-                    </span>
-                    <span className="text-[10px] text-emerald-400 font-bold font-mono">25% OFF EXCLUSIVO</span>
-                  </div>
-
-                  <p className="text-[11px] text-slate-300 italic leading-relaxed">
-                    "{upsellConfig.phrase}"
-                  </p>
-
-                  {/* Add Cross-sell item card */}
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex items-center space-x-3 justify-between">
-                    <div className="flex items-center space-x-2.5 min-w-0">
-                      <img
-                        src={upsellProduct.imageUrl}
-                        alt={upsellProduct.name}
-                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="min-w-0">
-                        <span className="block text-[10px] text-slate-400 uppercase truncate font-mono">{upsellProduct.category}</span>
-                        <span className="block text-white text-[11px] font-bold truncate">{upsellProduct.name}</span>
-                        <div className="flex items-baseline space-x-1.5 mt-0.5">
-                          <span className="text-amber-500 font-mono text-xs font-bold">${upsellConfig.discountedPrice.toLocaleString('es-CO')} COP</span>
-                          <span className="text-[9px] text-slate-500 line-through font-mono">${upsellConfig.originalPrice.toLocaleString('es-CO')}</span>
-                        </div>
-                      </div>
+                {/* FAST CROSS-SELL / COMBO CARD */}
+                <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <img
+                      src={upsellProduct.imageUrl}
+                      alt={upsellProduct.name}
+                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="min-w-0">
+                      <span className="block text-white text-xs font-bold truncate">Añadir {upsellProduct.name}</span>
+                      <span className="text-amber-400 font-mono text-xs font-bold">+${upsellConfig.discountedPrice.toLocaleString('es-CO')} <span className="text-slate-500 line-through text-[9px]">(-25% OFF)</span></span>
                     </div>
-
-                    {isUpsellAdded ? (
-                      <button
-                        type="button"
-                        onClick={() => setIsUpsellAdded(false)}
-                        className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase rounded-lg transition-all cursor-pointer flex-shrink-0 animate-fade-in"
-                      >
-                        ¡Añadido! ✓
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setIsUpsellAdded(true)}
-                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-extrabold uppercase rounded-lg flex items-center space-x-1 transition-all cursor-pointer flex-shrink-0"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span>Añadir</span>
-                      </button>
-                    )}
                   </div>
 
+                  {isUpsellAdded ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsUpsellAdded(false)}
+                      className="px-2.5 py-1.5 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded-lg cursor-pointer flex-shrink-0"
+                    >
+                      ¡Añadido! ✓
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsUpsellAdded(true)}
+                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-extrabold uppercase rounded-lg flex items-center space-x-1 cursor-pointer flex-shrink-0"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Añadir</span>
+                    </button>
+                  )}
                 </div>
 
-                {/* Form Elements */}
-                <form onSubmit={handleConfirmOrder} className="space-y-4">
+                {/* FAST CHECKOUT FORM */}
+                <form onSubmit={handleConfirmOrder} className="space-y-3.5">
                   
-                  {/* Order Summary Recap */}
-                  <div className="bg-slate-950 p-4 border border-slate-900 rounded-2xl space-y-3">
-                    <h4 className="font-sans font-bold text-[10px] text-slate-500 uppercase tracking-wider">
-                      Resumen de tu Despacho Contra Entrega:
-                    </h4>
-                    
-                    <div className="space-y-2">
-                      {itemsToCheckout.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-xs text-white">
-                          <span className="truncate max-w-[200px]">{item.product.name} <strong className="text-amber-500">× {item.quantity}</strong></span>
-                          <span className="font-mono">${(item.price * item.quantity).toLocaleString('es-CO')}</span>
-                        </div>
-                      ))}
-                      
-                      <div className="border-t border-slate-900 pt-2 flex justify-between items-center text-xs font-bold text-white">
-                        <span>Envío + Gestión (Con Recaudo):</span>
-                        <span className="text-amber-400 font-mono font-extrabold flex items-center space-x-1">
-                          <span>+${shippingCost.toLocaleString('es-CO')}</span>
-                          <Truck className="h-3.5 w-3.5" />
-                        </span>
-                      </div>
-                      
-                      <div className="border-t border-slate-900 pt-2 flex justify-between items-center text-sm font-extrabold text-amber-500">
-                        <span>Pagas únicamente al recibir en casa:</span>
-                        <span className="font-mono text-base font-extrabold">${totalPrice.toLocaleString('es-CO')} COP</span>
-                      </div>
-                    </div>
-
+                  {/* Ultra-Concise Summary */}
+                  <div className="bg-slate-950 p-3.5 border border-slate-850 rounded-xl flex justify-between items-center text-xs">
+                    <span className="text-slate-300 font-medium">Total a pagar al recibir:</span>
+                    <span className="font-mono text-base font-extrabold text-amber-400">${totalPrice.toLocaleString('es-CO')} COP</span>
                   </div>
 
                   {/* Customer Inputs */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <div>
-                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold mb-1 tracking-wider">Nombre Completo de Quien Recibe *</label>
                       <input
                         type="text"
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Ej. Carolina Cardona Toro"
-                        className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
+                        placeholder="Tu Nombre y Apellido *"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold mb-1 tracking-wider">Teléfono / Celular de Contacto *</label>
                       <input
                         type="tel"
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Ej. 314 567 8901 (Para confirmación)"
-                        className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
+                        placeholder="Tu Celular / WhatsApp *"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] text-slate-400 uppercase font-extrabold mb-1 tracking-wider">Departamento *</label>
-                        <select
-                          value={department}
-                          onChange={(e) => setDepartment(e.target.value)}
-                          className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
-                        >
-                          {departments.map((dept) => (
-                            <option key={dept} value={dept}>{dept}</option>
-                          ))}
-                        </select>
-                      </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <select
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
+                      >
+                        {departments.map((dept) => (
+                          <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                      </select>
 
-                      <div>
-                        <label className="block text-[10px] text-slate-400 uppercase font-extrabold mb-1 tracking-wider">Ciudad / Municipio *</label>
-                        <input
-                          type="text"
-                          required
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          placeholder="Ej. Medellín"
-                          className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
-                        />
-                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder="Ciudad / Municipio *"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold mb-1 tracking-wider">Dirección Exacta de Entrega *</label>
                       <input
                         type="text"
                         required
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Calle, Carrera, Edificio, Apto..."
-                        className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold mb-1 tracking-wider">Indicaciones / Barrio</label>
-                      <input
-                        type="text"
-                        value={indications}
-                        onChange={(e) => setIndications(e.target.value)}
-                        placeholder="Ej. Barrio Poblado, cerca al Euro"
-                        className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
+                        placeholder="Dirección Exacta (Calle, Apto, Barrio) *"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
                       />
                     </div>
                   </div>
 
-                  {/* Safety guarantees */}
-                  <div className="flex items-center space-x-2 bg-amber-500/5 p-3 rounded-lg border border-amber-500/10 text-[10px] text-slate-400 leading-normal">
-                    <ShieldCheck className="h-4.5 w-4.5 text-amber-500 flex-shrink-0" />
-                    <span><strong>Garantía de Entrega Dante:</strong> Tu dinero está 100% seguro. Pagas únicamente en efectivo cuando recibas en la puerta de tu hogar. Sin tarjetas de crédito ni transferencias previas.</span>
-                  </div>
-
-                  {/* Submit Order Action Button */}
+                  {/* Submit Action Button */}
                   <button
                     type="submit"
-                    className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 transition-all duration-300 cursor-pointer"
+                    className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
                   >
-                    <span>Comprar Contra Entrega Ahora 🐾</span>
+                    <span>Pedir Contra Entrega Ahora 🚀</span>
                   </button>
+                  <p className="text-center text-[10px] text-slate-500">
+                    Sin pagos anticipados. Pagas en efectivo al mensajero.
+                  </p>
 
                 </form>
 
