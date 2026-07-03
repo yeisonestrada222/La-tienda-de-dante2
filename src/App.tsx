@@ -363,9 +363,9 @@ export default function App() {
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 <p className="text-xs text-amber-300">
-                  <strong>Modo Demostración</strong> — Estos productos son de ejemplo. Conecta tu Shopify Storefront API en el
+                  <strong>Modo Demostración</strong> — Estos productos son de ejemplo. Conecta tu tienda en el
                   <button onClick={() => setIsIntegrationHubOpen(true)} className="underline font-bold ml-1 hover:text-amber-200 cursor-pointer">Centro de Sincronización</button>
-                  {' '}para ver tus productos reales de Dropi.
+                  {' '}para ver tus productos reales.
                 </p>
               </div>
             </div>

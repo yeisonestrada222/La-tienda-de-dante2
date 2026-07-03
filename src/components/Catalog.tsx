@@ -80,7 +80,7 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
             </div>
             <h3 className="font-sans font-bold text-lg text-white">Catálogo en Sincronización</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              No encontramos productos reales disponibles para esta categoría en este momento. Si acabas de importar desde Dropi, por favor verifica que estén activos en tu bodega.
+              No encontramos productos disponibles para esta categoría en este momento. Por favor verifica que estén activos en tu bodega.
             </p>
           </div>
         ) : (
