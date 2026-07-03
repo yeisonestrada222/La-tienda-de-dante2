@@ -320,42 +320,6 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                   </div>
                 </div>
 
-                {/* WOMPI SETUP CARD */}
-                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                        <DollarSign className="h-4 w-4 text-blue-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-sans font-bold text-sm text-white">Integración con Wompi</h4>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Pasarela Bancolombia</p>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase font-mono ${
-                      wompiPublicKey ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/40' : 'bg-slate-950 text-slate-500'
-                    }`}>
-                      {wompiPublicKey ? '🟢 Activo' : '🔴 Llave de Prueba'}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Wompi permite a tus clientes de Colombia pagar en línea con PSE, Nequi o tarjetas. Si no ingresas una llave, utilizaremos la llave de pruebas de Wompi de forma predeterminada.
-                  </p>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">Llave Pública de Wompi (Public Key)</label>
-                    <input
-                      type="text"
-                      value={wompiPublicKey}
-                      onChange={(e) => setWompiPublicKey(e.target.value)}
-                      placeholder="pub_test_... o pub_prod_..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500"
-                    />
-                    <p className="text-[9px] text-slate-500">Consigue tu Llave Pública en tu cuenta de Wompi &gt; Desarrolladores.</p>
-                  </div>
-                </div>
-
                 {/* SHOPIFY STOREFRONT API CARD */}
                 <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
                   <div className="flex items-center justify-between">
@@ -364,7 +328,7 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                         <Database className="h-4 w-4 text-emerald-400" />
                       </div>
                       <div>
-                        <h4 className="font-sans font-bold text-sm text-white">Shopify Storefront API</h4>
+                        <h4 className="font-sans font-bold text-sm text-white">2. Shopify Storefront API</h4>
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Catálogo Dinámico</p>
                       </div>
                     </div>
@@ -392,7 +356,7 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                   </div>
                 </div>
 
-                {/* Card 4: n8n Automations */}
+                {/* Card 3: n8n Automations */}
                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -400,7 +364,7 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                         <Sparkles className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="font-sans font-bold text-sm text-white">4. Webhook de n8n (Automatizaciones)</h4>
+                        <h4 className="font-sans font-bold text-sm text-white">3. Webhook de n8n (Automatizaciones)</h4>
                         <p className="text-[11px] text-slate-400">Envío instantáneo de leads y formularios de contacto</p>
                       </div>
                     </div>
