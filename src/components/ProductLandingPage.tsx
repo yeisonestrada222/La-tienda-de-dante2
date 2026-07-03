@@ -100,7 +100,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
       ];
 
   const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shippingCost = 15000;
+  const shippingCost = 20000;
   const totalPrice = subtotal + shippingCost;
 
   const handleConfirmOrder = (e: FormEvent) => {

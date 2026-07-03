@@ -34,7 +34,7 @@ export default function Checkout({ cart, singleProduct, onClose, onClearCart, on
     : cart;
 
   const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  const shippingCost = paymentMethod === 'wompi' ? 12000 : 15000;
+  const shippingCost = paymentMethod === 'wompi' ? 15000 : 20000;
   const totalPrice = subtotal + shippingCost;
 
   const handleConfirmOrder = async (e: FormEvent) => {
