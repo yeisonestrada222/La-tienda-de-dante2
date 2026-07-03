@@ -55,11 +55,12 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
     products.reduce((acc, p) => ({ ...acc, [p.id]: p.price }), {})
   );
 
-  // Dropi, Wompi & Shopify Credentials
+  // Dropi, Wompi, Shopify & n8n Credentials
   const [dropiToken, setDropiToken] = useState('');
   const [dropiBaseUrl, setDropiBaseUrl] = useState('https://api.dropi.co');
   const [wompiPublicKey, setWompiPublicKey] = useState('');
   const [shopifyStorefrontToken, setShopifyStorefrontToken] = useState('');
+  const [n8nWebhookUrl, setN8nWebhookUrl] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   
   // Product mappings
@@ -75,10 +76,12 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
     const savedBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
     const savedWompiKey = localStorage.getItem('dante_wompi_public_key') || '';
     const savedStorefrontToken = localStorage.getItem('dante_shopify_storefront_token') || '';
+    const savedN8n = localStorage.getItem('dante_n8n_webhook_url') || '';
     setDropiToken(savedToken);
     setDropiBaseUrl(savedBaseUrl);
     setWompiPublicKey(savedWompiKey);
     setShopifyStorefrontToken(savedStorefrontToken);
+    setN8nWebhookUrl(savedN8n);
 
     const savedDropiIds = localStorage.getItem('dante_product_dropi_ids') || '{}';
     try {
@@ -100,6 +103,7 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
     localStorage.setItem('dante_dropi_base_url', dropiBaseUrl.trim());
     localStorage.setItem('dante_wompi_public_key', wompiPublicKey.trim());
     localStorage.setItem('dante_shopify_storefront_token', shopifyStorefrontToken.trim());
+    localStorage.setItem('dante_n8n_webhook_url', n8nWebhookUrl.trim());
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
     // Recargar la página para que App.tsx recargue los productos de Shopify
@@ -385,6 +389,39 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500"
                     />
                     <p className="text-[9px] text-slate-500">Shopify Admin → Settings → Apps → Develop apps → Storefront API → Access Token.</p>
+                  </div>
+                </div>
+
+                {/* Card 4: n8n Automations */}
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-sans font-bold text-sm text-white">4. Webhook de n8n (Automatizaciones)</h4>
+                        <p className="text-[11px] text-slate-400">Envío instantáneo de leads y formularios de contacto</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full border bg-slate-950 text-emerald-400 border-emerald-500/30">
+                      {n8nWebhookUrl ? '🟢 Conectado' : '⚪ Opcional'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Pega aquí la URL de producción de tu nodo Webhook en n8n. Cada vez que un cliente complete el formulario de soporte de Dante, se enviará un POST en tiempo real con sus datos para que actives bots de WhatsApp, correos o Google Sheets.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">URL del Webhook de n8n</label>
+                    <input
+                      type="url"
+                      value={n8nWebhookUrl}
+                      onChange={(e) => setN8nWebhookUrl(e.target.value)}
+                      placeholder="https://n8n.tudominio.com/webhook/dante-contacto..."
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                    />
                   </div>
                 </div>
 

@@ -17,7 +17,7 @@ export default function Contact({ onSaveMessage, savedMessages }: ContactProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || !message.trim()) return;
 
@@ -36,20 +36,39 @@ export default function Contact({ onSaveMessage, savedMessages }: ContactProps) 
       })
     };
 
-    setTimeout(() => {
-      onSaveMessage(messageObj);
-      setIsSubmitting(false);
-      setIsSuccess(true);
+    onSaveMessage(messageObj);
 
-      // Reset
-      setName('');
-      setEmail('');
-      setPhone('');
-      setMessage('');
-      setInterest('Consulta General');
+    // Enviar a n8n Webhook (si está configurado por el usuario o entorno)
+    const n8nWebhookUrl = localStorage.getItem('dante_n8n_webhook_url') || import.meta.env.VITE_N8N_WEBHOOK_URL || '';
+    if (n8nWebhookUrl.trim()) {
+      try {
+        await fetch(n8nWebhookUrl.trim(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'contact_form_submitted',
+            source: 'La Tienda de Dante Storefront',
+            data: messageObj,
+            timestamp: new Date().toISOString()
+          })
+        });
+        console.log('[Dante Store] ✅ Mensaje enviado al Webhook de n8n');
+      } catch (err) {
+        console.warn('[Dante Store] Error al disparar Webhook n8n:', err);
+      }
+    }
 
-      setTimeout(() => setIsSuccess(false), 5000);
-    }, 1200);
+    setIsSubmitting(false);
+    setIsSuccess(true);
+
+    // Reset
+    setName('');
+    setEmail('');
+    setPhone('');
+    setMessage('');
+    setInterest('Consulta General');
+
+    setTimeout(() => setIsSuccess(false), 5000);
   };
 
   return (
