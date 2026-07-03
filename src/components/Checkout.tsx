@@ -29,6 +29,10 @@ export default function Checkout({
   const [address, setAddress] = useState('');
   const [indications, setIndications] = useState('');
 
+  // CRO Opt 3: Order Bump
+  const [addOrderBump, setAddOrderBump] = useState(false);
+  const orderBumpPrice = 12900;
+
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [personalCoupon, setPersonalCoupon] = useState('DANTE15');
@@ -45,7 +49,8 @@ export default function Checkout({
   // OPT #5: Envío gratis por compra >= $150.000 (incentiva aumentar el ticket AOV)
   const FREE_SHIPPING_THRESHOLD = 150000;
   const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 20000;
-  const totalPrice = subtotal + shippingCost;
+  const baseTotalPrice = subtotal + shippingCost;
+  const totalPrice = baseTotalPrice + (addOrderBump ? orderBumpPrice : 0);
 
   // OPT #6: Cupón personalizado único por cliente (sin backend)
   const generatePersonalCoupon = (customerName: string, oId: string): string => {
@@ -84,6 +89,16 @@ export default function Checkout({
         ? item.product.id.replace('dropi-', '')
         : (item.product as any).dropiId || item.product.id
     }));
+    
+    if (addOrderBump) {
+      items.push({
+        id: 'bump-001',
+        name: 'Seguro de Envío Prioritario VIP',
+        price: orderBumpPrice,
+        quantity: 1,
+        dropiProductId: ''
+      });
+    }
 
     const newOrder: any = {
       id: randomId,
@@ -255,7 +270,7 @@ export default function Checkout({
               href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante%2C%20confirmo%20mi%20pedido%20%23${orderId}.%20Soy%20${encodeURIComponent(name)}%20en%20${encodeURIComponent(address)}%2C%20${encodeURIComponent(city)}.%20Total%3A%20%24${totalPrice.toLocaleString('es-CO')}%20COP`}
               target="_blank"
               rel="noreferrer"
-              className="w-full max-w-sm mx-auto py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all text-center shadow-lg shadow-emerald-500/20 block"
+              className="w-full max-w-sm mx-auto py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all text-center shadow-lg shadow-emerald-500/20"
             >
               <PhoneCall className="h-4 w-4" />
               <span>Confirmar por WhatsApp</span>
@@ -279,9 +294,32 @@ export default function Checkout({
                   <span>Envío + Gestión (Con Recaudo):</span>
                   <span className="text-amber-400 font-mono">+${shippingCost.toLocaleString('es-CO')}</span>
                 </div>
+                {addOrderBump && (
+                  <div className="flex justify-between items-center text-[11px] text-amber-500 font-bold">
+                    <span>Seguro VIP Priority:</span>
+                    <span className="font-mono">+${orderBumpPrice.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
                 <div className="border-t border-slate-800 pt-2 flex justify-between items-center text-sm font-extrabold text-amber-400">
                   <span>Total a Pagar en Casa:</span>
                   <span className="font-mono">${totalPrice.toLocaleString('es-CO')} COP</span>
+                </div>
+              </div>
+
+              {/* CRO Opt 3: Order Bump Checkbox */}
+              <div 
+                className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer mb-4 flex items-start space-x-3 ${addOrderBump ? 'bg-amber-500/10 border-amber-500' : 'bg-slate-900 border-slate-800 border-dashed hover:border-amber-500/50'}`} 
+                onClick={() => setAddOrderBump(!addOrderBump)}
+              >
+                <input type="checkbox" checked={addOrderBump} readOnly className="mt-1 w-4 h-4 accent-amber-500 pointer-events-none" />
+                <div>
+                  <p className="text-[11px] text-white font-bold leading-tight flex items-center space-x-1.5">
+                    <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded font-black animate-pulse">OFERTA ÚNICA</span>
+                    <span>Seguro de Envío Prioritario VIP</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-1.5 leading-snug">
+                    Garantiza que tu pedido se prepare de primero, se envíe con trato especial hoy mismo y tenga cobertura total contra daños en el trayecto. <strong>(+${orderBumpPrice.toLocaleString('es-CO')})</strong>
+                  </p>
                 </div>
               </div>
 
@@ -351,6 +389,15 @@ export default function Checkout({
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:outline-none focus:border-amber-500"
                   />
                 </div>
+              </div>
+
+              {/* CRO Opt 2: Guarantee Trust Badge */}
+              <div className="flex items-start space-x-3 bg-emerald-900/20 p-3.5 rounded-xl border border-emerald-500/30 mb-3">
+                <ShieldCheck className="text-emerald-500 h-6 w-6 flex-shrink-0" />
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <strong className="text-emerald-400 block mb-0.5">Garantía Incondicional de Dante:</strong>
+                  Si a tu mascota no le encanta, te devolvemos tu dinero en 30 días, sin preguntas ni complicaciones.
+                </p>
               </div>
 
               {/* Submit CTA */}

@@ -21,6 +21,13 @@ export default function Contact({ onSaveMessage, savedMessages }: ContactProps) 
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || !message.trim()) return;
 
+    // Security & QA: Validar número de celular Colombia
+    const phoneRegex = /^3\d{9}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      alert("Por favor, ingresa un número de celular válido de 10 dígitos (ej: 3001234567)");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const messageObj: ContactMessage = {

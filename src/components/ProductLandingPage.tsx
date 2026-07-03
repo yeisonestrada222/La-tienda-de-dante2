@@ -300,7 +300,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
               href={`https://wa.me/573108245540?text=Hola%20Tienda%20de%20Dante,%20confirmo%20mi%20pedido%20%23${orderId}%20de%20$%20${totalPrice.toLocaleString('es-CO')}%20COP%20para%20despacho`}
               target="_blank"
               rel="noreferrer"
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all block text-center shadow-lg shadow-emerald-500/20"
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-all text-center shadow-lg shadow-emerald-500/20"
             >
               <PhoneCall className="h-4 w-4" />
               <span>Confirmar Dirección por WhatsApp</span>

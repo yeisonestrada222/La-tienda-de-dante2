@@ -106,6 +106,11 @@ export default function App() {
     }, [cart.length, isCheckoutOpen]),
     once: true,
   });
+
+  // QA Bug 1: Restablecer modal si vacían el carrito
+  useEffect(() => {
+    if (cart.length === 0) setIsExitIntentOpen(false);
+  }, [cart.length]);
   
   // Active Landing Product for campaign funnel (Subpágina dedicada)
   const [activeLandingProduct, setActiveLandingProduct] = useState<Product | null>(null);
@@ -113,10 +118,16 @@ export default function App() {
   // Detectar si la URL tiene parámetro ?product=... o #producto/... para campañas directas en Ads
   useEffect(() => {
     if (products.length === 0) return;
+
     const params = new URLSearchParams(window.location.search);
-    const target = params.get('product') || params.get('p') || window.location.hash.replace(/^#(producto|product)\//i, '');
-    if (target && !activeLandingProduct) {
-      const decoded = decodeURIComponent(target).toLowerCase();
+    const productId = params.get('product') || params.get('p');
+    
+    // Check hash for #producto/id
+    const hashMatch = window.location.hash.match(/#producto\/(.+)/);
+    const targetId = productId || (hashMatch ? hashMatch[1] : null);
+
+    if (targetId) {
+      const decoded = decodeURIComponent(targetId).toLowerCase();
       const match = products.find(p => 
         p.id.toLowerCase() === decoded || 
         p.id.toLowerCase().endsWith(decoded) || 
@@ -127,6 +138,18 @@ export default function App() {
       }
     }
   }, [products]);
+
+  // QA Bug 2: Manejar el botón 'Atrás' del navegador
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.get('product') && !params.get('p') && !window.location.hash.includes('producto')) {
+        setActiveLandingProduct(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Integration Hub state
   const [isIntegrationHubOpen, setIsIntegrationHubOpen] = useState(false);
@@ -315,7 +338,7 @@ export default function App() {
             product={activeLandingProduct}
             allProducts={displayProducts}
             onBackToStore={handleCloseLandingProduct}
-            onClearCart={() => setCart([])}
+            onClearCart={() => { setCart([]); localStorage.removeItem('dante_cart'); }}
             onNewOrderAlert={(name, city, product) => triggerAlert(name, city, product, true)}
             onAddToCart={(prod) => {
               handleAddToCart(prod);

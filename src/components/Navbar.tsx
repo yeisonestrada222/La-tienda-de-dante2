@@ -23,7 +23,12 @@ export default function Navbar({
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalPrice = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const totalPrice = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
+
+  // CRO Opt 1: Shipping Threshold Progress
+  const FREE_SHIPPING_THRESHOLD = 150000;
+  const amountMissing = Math.max(0, FREE_SHIPPING_THRESHOLD - totalPrice);
+  const progressPercentage = Math.min(100, (totalPrice / FREE_SHIPPING_THRESHOLD) * 100);
 
   const navLinks = [
     { id: 'inicio', label: 'Inicio' },
@@ -127,6 +132,18 @@ export default function Navbar({
                     </div>
                   ) : (
                     <>
+                      {/* CRO Opt 1: Progress Bar */}
+                      <div className="mb-4 bg-slate-950/50 p-3 rounded-lg border border-slate-800">
+                        <p className="text-[11px] text-slate-300 text-center mb-2 font-medium">
+                          {amountMissing > 0 
+                            ? <>Te faltan <strong className="text-amber-500">${amountMissing.toLocaleString('es-CO')}</strong> para Envío Gratis 🚚</>
+                            : <span className="text-emerald-400 font-bold">¡Felicidades! Tienes Envío Gratis 🚚</span>}
+                        </p>
+                        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-amber-500 h-1.5 transition-all duration-500" style={{ width: `${progressPercentage}%` }}></div>
+                        </div>
+                      </div>
+
                       <div className="max-h-60 overflow-y-auto space-y-3 pr-1">
                         {cart.map((item) => (
                           <div key={item.product.id} className="flex items-center space-x-3 bg-slate-950/50 p-2 rounded-lg border border-slate-800/50">
@@ -159,9 +176,11 @@ export default function Navbar({
                           <span>Subtotal:</span>
                           <span className="text-white font-bold">${totalPrice.toLocaleString('es-CO')} COP</span>
                         </div>
-                        <div className="flex justify-between text-[10px] text-emerald-400 bg-emerald-950/30 p-1.5 rounded border border-emerald-900/30">
+                        <div className="flex justify-between text-[10px] text-slate-300 bg-slate-900/50 p-1.5 rounded border border-slate-800">
                           <span>Envío Nacional:</span>
-                          <span className="font-bold">¡GRATIS CONTRA ENTREGA!</span>
+                          <span className={amountMissing <= 0 ? "text-emerald-400 font-bold" : "font-bold text-amber-500"}>
+                            {amountMissing <= 0 ? "¡GRATIS CONTRA ENTREGA!" : "$20.000 COP"}
+                          </span>
                         </div>
                         <button
                           onClick={() => {
