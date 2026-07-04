@@ -106,11 +106,13 @@ export async function syncOrderToDropi(
       ciudad: order.city,
       barrio: order.indications || ''
     },
-    productos: order.items.map(item => ({
-      id: parseInt(item.dropiProductId, 10) || 0, // Dropi espera un número de ID
-      cantidad: item.quantity,
-      precio_venta: item.price
-    }))
+    productos: order.items
+      .filter(item => parseInt(item.dropiProductId, 10) > 0)
+      .map(item => ({
+        id: parseInt(item.dropiProductId, 10),
+        cantidad: item.quantity,
+        precio_venta: item.price
+      }))
   };
 
   const response = await fetch(url, {

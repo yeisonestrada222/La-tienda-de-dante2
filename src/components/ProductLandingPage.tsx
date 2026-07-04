@@ -31,6 +31,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   // Upsell state
   const [isUpsellAdded, setIsUpsellAdded] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
   // Bug #6: precio de upsell dinámico proporcional al precio real del producto (20% de descuento)
@@ -96,8 +97,11 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
     if (!city.trim()) { alert('Por favor ingresa tu ciudad.'); return; }
     if (address.trim().length < 6) { alert('Por favor ingresa una dirección completa (mínimo 6 caracteres).'); return; }
 
-    const randomId = `DNT-AD-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderId(randomId);
+    setIsSubmitting(true);
+    
+    try {
+      const randomId = `DNT-AD-${Math.floor(100000 + Math.random() * 900000)}`;
+      setOrderId(randomId);
 
     // Bug #2: persistir la orden en localStorage igual que Checkout.tsx
     // Bug #3: incluir dropiProductId real
@@ -116,7 +120,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
 
     const newOrder: any = {
       id: randomId,
-      customerName: name,
+      name,
       phone: phoneClean,
       email: 'servicioalcliente@latiendadedante.com',
       department,
@@ -151,9 +155,12 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
 
     setIsSuccess(true);
 
-    if (onNewOrderAlert) {
-      const itemsNames = itemsToCheckout.map(item => `${item.product.name} (x${item.quantity})`).join(' + ');
-      onNewOrderAlert(name, city, itemsNames);
+      if (onNewOrderAlert) {
+        const itemsNames = itemsToCheckout.map(item => `${item.product.name} (x${item.quantity})`).join(' + ');
+        onNewOrderAlert(name, city, itemsNames);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -697,9 +704,10 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   {/* Submit Action Button */}
                   <button
                     type="submit"
-                    className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
                   >
-                    <span>Pedir Contra Entrega Ahora 🚀</span>
+                    <span>{isSubmitting ? 'Procesando...' : 'Pedir Contra Entrega Ahora 🚀'}</span>
                   </button>
                   <p className="text-center text-[10px] text-slate-500">
                     Sin pagos anticipados. Pagas en efectivo al mensajero.

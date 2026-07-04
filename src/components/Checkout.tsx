@@ -35,6 +35,7 @@ export default function Checkout({
   const orderBumpPrice = 12900;
 
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [personalCoupon, setPersonalCoupon] = useState('DANTE15');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -72,10 +73,13 @@ export default function Checkout({
     // OPT #3: Evento de tracking al iniciar checkout
     trackInitiateCheckout(totalPrice, itemsToCheckout.length);
 
-    const randomId = `DNT-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderId(randomId);
-    const coupon = generatePersonalCoupon(name, randomId);
-    setPersonalCoupon(coupon);
+    setIsSubmitting(true);
+
+    try {
+      const randomId = `DNT-${Math.floor(100000 + Math.random() * 900000)}`;
+      setOrderId(randomId);
+      const coupon = generatePersonalCoupon(name, randomId);
+      setPersonalCoupon(coupon);
 
     const dropiToken = localStorage.getItem('dante_dropi_token') || '';
     const dropiBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
@@ -103,7 +107,7 @@ export default function Checkout({
 
     const newOrder: any = {
       id: randomId,
-      customerName: name,
+      name,
       phone: phoneClean,
       email: email.trim() || 'cliente@latiendadedante.com', // OPT #2
       department,
@@ -175,9 +179,12 @@ export default function Checkout({
 
     setIsSuccess(true);
 
-    if (onNewOrderAlert) {
-      const itemsNames = itemsToCheckout.map(item => `${item.product.name} (x${item.quantity})`).join(' + ');
-      onNewOrderAlert(name, city, itemsNames);
+      if (onNewOrderAlert) {
+        const itemsNames = itemsToCheckout.map(item => `${item.product.name} (x${item.quantity})`).join(' + ');
+        onNewOrderAlert(name, city, itemsNames);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -401,10 +408,10 @@ export default function Checkout({
               {/* Submit CTA */}
               <button
                 type="submit"
-                disabled={itemsToCheckout.length === 0}
+                disabled={itemsToCheckout.length === 0 || isSubmitting}
                 className="w-full py-4 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg"
               >
-                <span>Pedir Contra Entrega Ahora 🚀</span>
+                <span>{isSubmitting ? 'Procesando...' : 'Pedir Contra Entrega Ahora 🚀'}</span>
               </button>
               <p className="text-center text-[10px] text-slate-500">
                 Sin pagos anticipados. Pagas en efectivo al recibir.
