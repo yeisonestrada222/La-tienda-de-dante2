@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Product } from '../types';
 import { X, Truck, CheckCircle2, ShieldCheck, PhoneCall } from 'lucide-react';
-import { syncOrderToDropi } from '../utils/api';
+import { syncOrderToDropi, syncOrderToCRM } from '../utils/api';
 import { trackInitiateCheckout, trackPurchase } from '../utils/tracking';
 import { colombiaDepartments, colombiaLocations } from '../utils/colombiaLocations';
 
@@ -155,27 +155,8 @@ export default function Checkout({
     // OPT #3: Evento Purchase para Meta y TikTok
     trackPurchase(randomId, totalPrice, items.map(i => ({ id: i.id, name: i.name })));
 
-    // OPT #6: Disparar webhook n8n post-orden si está configurado
-    const n8nUrl = localStorage.getItem('dante_n8n_webhook_url') || '';
-    if (n8nUrl.trim()) {
-      try {
-        await fetch(n8nUrl.trim(), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event: 'new_order_placed',
-            source: 'La Tienda de Dante — Checkout',
-            order: {
-              id: randomId, customerName: name, phone: phoneClean,
-              email: email.trim(), city, department, totalPrice,
-              coupon, items: itemsToCheckout.map(i => i.product.name),
-              whatsappLink: `https://wa.me/57${phoneClean}?text=Hola%20${encodeURIComponent(name)}!%20Tu%20pedido%20${randomId}%20est%C3%A1%20confirmado%20%F0%9F%8E%89%20C%C3%B3digo%20VIP%3A%20${coupon}`
-            },
-            timestamp: new Date().toISOString()
-          })
-        });
-      } catch { /* no bloquear la compra si n8n falla */ }
-    }
+    // OPT #6: Disparar webhook n8n para CRM
+    await syncOrderToCRM(newOrder);
 
     setIsSuccess(true);
 

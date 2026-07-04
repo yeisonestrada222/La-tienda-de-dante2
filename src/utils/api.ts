@@ -145,3 +145,36 @@ export async function syncOrderToDropi(
     guide: result.data?.guide || result.guide || ''
   };
 }
+
+/**
+ * Envia el pedido al CRM central (n8n Webhook)
+ * Este webhook debe estar conectado a Airtable/Google Sheets y bots de WhatsApp.
+ */
+export async function syncOrderToCRM(order: any): Promise<void> {
+  const n8nUrl = localStorage.getItem('dante_n8n_webhook_url') || import.meta.env.VITE_N8N_WEBHOOK_URL || '';
+  if (!n8nUrl.trim()) {
+    return; // No CRM configured
+  }
+
+  try {
+    const payload = {
+      event: 'new_order',
+      source: 'dante_store_checkout',
+      order: order
+    };
+
+    const response = await fetch(n8nUrl.trim(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      console.warn('[CRM Sync] Error al enviar pedido a n8n:', response.statusText);
+    }
+  } catch (err) {
+    console.error('[CRM Sync] Fallo de red al contactar n8n:', err);
+  }
+}

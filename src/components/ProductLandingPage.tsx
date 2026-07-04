@@ -1,7 +1,7 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { Product } from '../types';
 import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, Heart, ArrowLeft, PhoneCall, Clock, Users, Flame, ShieldAlert, Gift, ThumbsUp } from 'lucide-react';
-import { syncOrderToDropi } from '../utils/api';
+import { syncOrderToDropi, syncOrderToCRM } from '../utils/api';
 import { trackViewContent, trackInitiateCheckout, trackPurchase } from '../utils/tracking';
 import { colombiaDepartments, colombiaLocations } from '../utils/colombiaLocations';
 
@@ -152,6 +152,9 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
     try { existingOrders = JSON.parse(existingOrdersStr); } catch { existingOrders = []; }
     existingOrders.unshift(newOrder);
     localStorage.setItem('dante_orders', JSON.stringify(existingOrders));
+
+    // CRM n8n Integration
+    await syncOrderToCRM(newOrder);
 
     setIsSuccess(true);
 

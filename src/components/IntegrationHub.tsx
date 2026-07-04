@@ -390,7 +390,7 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                   </div>
 
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Pega aquí la URL de producción de tu nodo Webhook en n8n. Cada vez que un cliente complete el formulario de soporte de Dante, se enviará un POST en tiempo real con sus datos para que actives bots de WhatsApp, correos o Google Sheets.
+                    Pega aquí la URL de producción de tu nodo Webhook en n8n. Este es el corazón de tu CRM. Cada vez que un cliente complete un pedido (o envíe un mensaje de soporte), se enviará un POST en tiempo real con TODOS sus datos para que n8n lo inserte en Airtable/Google Sheets y dispare bots de WhatsApp (Opción 1 del Plan Arquitectónico).
                   </p>
 
                   <div className="space-y-1.5">
