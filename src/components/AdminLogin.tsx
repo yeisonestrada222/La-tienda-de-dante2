@@ -11,9 +11,19 @@ export default function AdminLogin({ onLoginSuccess, onClose }: AdminLoginProps)
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim().toLowerCase() === 'dante' && password === 'Dante2026*') {
+    
+    // Hash the input password using Web Crypto API (SHA-256)
+    const msgBuffer = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Hash real de "Dante2026*"
+    const TARGET_HASH = 'eed01f34900faf43f97a12da54f39032b647310ad17e7903be52cb9fce727fc7';
+
+    if (username.trim().toLowerCase() === 'dante' && hashHex === TARGET_HASH) {
       setError(false);
       // Guardamos la sesión en localStorage para que dure 24h
       const sessionData = {
