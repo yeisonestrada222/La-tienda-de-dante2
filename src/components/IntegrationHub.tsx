@@ -87,21 +87,21 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
 
     const savedDropiIds = localStorage.getItem('dante_product_dropi_ids') || '{}';
     try {
-      setProductDropiIds(JSON.parse(savedDropiIds));
+      setProductDropiIds(JSON.parse(savedDropiIds) || {});
     } catch (e) {
       setProductDropiIds({});
     }
 
     const savedCategories = localStorage.getItem('dante_custom_categories') || '{}';
     try {
-      setCustomCategories(JSON.parse(savedCategories));
+      setCustomCategories(JSON.parse(savedCategories) || {});
     } catch (e) {
       setCustomCategories({});
     }
 
     const savedOrdersStr = localStorage.getItem('dante_orders') || '[]';
     try {
-      setOrders(JSON.parse(savedOrdersStr));
+      setOrders(JSON.parse(savedOrdersStr) || []);
     } catch (e) {
       setOrders([]);
     }
