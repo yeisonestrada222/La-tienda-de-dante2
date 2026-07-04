@@ -16,7 +16,8 @@ import {
   CheckCircle2, 
   Send, 
   ArrowRight,
-  Database
+  Database,
+  Sparkles
 } from 'lucide-react';
 import { SHOPIFY_LIQUID_CODE, DROPI_INTEGRATION_STEPS } from '../data';
 import { Product } from '../types';
