@@ -343,7 +343,7 @@ export default function App() {
         cart={cart}
         onRemoveFromCart={handleRemoveFromCart}
         onOpenCheckout={handleOpenGeneralCheckout}
-        onOpenIntegrationHub={() => setIsIntegrationHubOpen(true)}
+        onOpenIntegrationHub={handleOpenConfig}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
       />
@@ -371,7 +371,7 @@ export default function App() {
               const catElement = document.getElementById('catalogo');
               if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
             }}
-            onOpenIntegrationHub={() => setIsIntegrationHubOpen(true)}
+            onOpenIntegrationHub={handleOpenConfig}
           />
 
           {/* Connection Status Banner */}
@@ -381,7 +381,7 @@ export default function App() {
                 <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 <p className="text-xs text-amber-300">
                   <strong>Modo Demostración</strong> — Estos productos son de ejemplo. Conecta tu tienda en el
-                  <button onClick={() => setIsIntegrationHubOpen(true)} className="underline font-bold ml-1 hover:text-amber-200 cursor-pointer">Centro de Sincronización</button>
+                  <button onClick={handleOpenConfig} className="underline font-bold ml-1 hover:text-amber-200 cursor-pointer">Centro de Sincronización</button>
                   {' '}para ver tus productos reales.
                 </p>
               </div>
@@ -443,6 +443,7 @@ export default function App() {
       {isAdminLoginOpen && (
         <AdminLogin 
           onLoginSuccess={() => {
+            setIsAdminLoginOpen(false);
             setIsAdminLoginOpen(false);
             setIsIntegrationHubOpen(true);
           }}

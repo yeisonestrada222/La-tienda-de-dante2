@@ -96,7 +96,8 @@ export default function AdminLogin({ onLoginSuccess, onClose }: AdminLoginProps)
 
             <button
               type="submit"
-              className="w-full mt-2 py-3 bg-amber-500 hover:bg-amber-400 text-black font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg shadow-amber-500/20"
+              disabled={!username || !password}
+              className={`w-full mt-2 py-3 font-sans font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg shadow-amber-500/20 ${(!username || !password) ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none' : 'bg-amber-500 hover:bg-amber-400 text-black'}`}
             >
               <span>Ingresar al Sistema</span>
               <ArrowRight className="h-4 w-4" />
