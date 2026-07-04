@@ -147,23 +147,27 @@ export async function syncOrderToDropi(
 }
 
 /**
- * Envia el pedido al CRM central (n8n Webhook)
- * Este webhook debe estar conectado a Airtable/Google Sheets y bots de WhatsApp.
+ * Envia el pedido al CRM central (Shopify Admin API vía Vercel Backend)
+ * Esto evade el bloqueo de CORS y crea el pedido directamente en tu Shopify.
  */
 export async function syncOrderToCRM(order: any): Promise<void> {
-  const n8nUrl = localStorage.getItem('dante_n8n_webhook_url') || import.meta.env.VITE_N8N_WEBHOOK_URL || '';
-  if (!n8nUrl.trim()) {
-    return; // No CRM configured
+  // Sacamos el token de Admin y el dominio de Shopify del localStorage
+  const shopifyDomain = localStorage.getItem('dante_shopify_domain') || import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || '';
+  const adminToken = localStorage.getItem('dante_shopify_admin_token') || '';
+
+  if (!shopifyDomain || !adminToken) {
+    return; // No Shopify CRM configured
   }
 
   try {
     const payload = {
-      event: 'new_order',
-      source: 'dante_store_checkout',
-      order: order
+      order,
+      shopifyDomain,
+      adminToken
     };
 
-    const response = await fetch(n8nUrl.trim(), {
+    // Llamamos a nuestro propio backend Serverless alojado en Vercel
+    const response = await fetch('/api/shopify-sync', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -172,9 +176,12 @@ export async function syncOrderToCRM(order: any): Promise<void> {
     });
 
     if (!response.ok) {
-      console.warn('[CRM Sync] Error al enviar pedido a n8n:', response.statusText);
+      const errorData = await response.json();
+      console.warn('[CRM Sync] Error al crear pedido en Shopify:', errorData);
+    } else {
+      console.log('[CRM Sync] ✅ Pedido creado en Shopify Admin exitosamente.');
     }
   } catch (err) {
-    console.error('[CRM Sync] Fallo de red al contactar n8n:', err);
+    console.error('[CRM Sync] Fallo de red al contactar Vercel Backend:', err);
   }
 }

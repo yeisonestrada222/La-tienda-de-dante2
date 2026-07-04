@@ -17,7 +17,8 @@ import {
   Send, 
   ArrowRight,
   Database,
-  Sparkles
+  Sparkles,
+  ShoppingBag
 } from 'lucide-react';
 import { SHOPIFY_LIQUID_CODE, DROPI_INTEGRATION_STEPS } from '../data';
 import { Product } from '../types';
@@ -372,35 +373,48 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                   </div>
                 </div>
 
-                {/* Card 3: n8n Automations */}
-                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
+                {/* Card 3: Shopify Admin Sync */}
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
-                        <Sparkles className="h-5 w-5" />
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <ShoppingBag className="h-4 w-4 text-green-500" />
                       </div>
                       <div>
-                        <h4 className="font-sans font-bold text-sm text-white">3. Webhook de n8n (Automatizaciones)</h4>
-                        <p className="text-[11px] text-slate-400">Envío instantáneo de leads y formularios de contacto</p>
+                        <h4 className="font-sans font-bold text-sm text-white">3. CRM en Shopify Admin</h4>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Backend Serverless</p>
                       </div>
                     </div>
-                    <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full border bg-slate-950 text-emerald-400 border-emerald-500/30">
-                      {n8nWebhookUrl ? '🟢 Conectado' : '⚪ Opcional'}
-                    </span>
                   </div>
 
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Pega aquí la URL de producción de tu nodo Webhook en n8n. Este es el corazón de tu CRM. Cada vez que un cliente complete un pedido (o envíe un mensaje de soporte), se enviará un POST en tiempo real con TODOS sus datos para que n8n lo inserte en Airtable/Google Sheets y dispare bots de WhatsApp (Opción 1 del Plan Arquitectónico).
+                    Pega aquí tu <strong>Token de Acceso a la API del panel de control</strong> de Shopify (`shpat_...`). 
+                    Al configurarlo, cada venta se sincronizará automáticamente en tu administrador de Shopify para que lo uses como tu CRM principal (Opción 2 del Plan Arquitectónico).
                   </p>
 
                   <div className="space-y-1.5">
-                    <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">URL del Webhook de n8n</label>
+                    <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">Shopify Admin Token</label>
                     <input
-                      type="url"
-                      value={n8nWebhookUrl}
-                      onChange={(e) => setN8nWebhookUrl(e.target.value)}
-                      placeholder="https://n8n.tudominio.com/webhook/dante-contacto..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                      type="password"
+                      value={localStorage.getItem('dante_shopify_admin_token') || ''}
+                      onChange={(e) => {
+                        localStorage.setItem('dante_shopify_admin_token', e.target.value.trim());
+                      }}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500 font-mono transition-all"
+                      placeholder="shpat_..."
+                    />
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">Shopify Domain</label>
+                    <input
+                      type="text"
+                      value={localStorage.getItem('dante_shopify_domain') || import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || ''}
+                      onChange={(e) => {
+                        localStorage.setItem('dante_shopify_domain', e.target.value.trim());
+                      }}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500 font-mono transition-all"
+                      placeholder="tutienda.myshopify.com"
                     />
                   </div>
                 </div>
