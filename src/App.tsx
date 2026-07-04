@@ -8,11 +8,12 @@ import Checkout from './components/Checkout';
 import IntegrationHub from './components/IntegrationHub';
 import ProductLandingPage from './components/ProductLandingPage';
 import ExitIntentModal from './components/ExitIntentModal';
+import AdminLogin from './components/AdminLogin';
 import { useExitIntent } from './hooks/useExitIntent';
 
 import { INITIAL_PRODUCTS, INITIAL_REVIEWS } from './data';
 import { Product, Review, ContactMessage } from './types';
-import { Flame, Sparkles, ShoppingBag } from 'lucide-react';
+import { Flame, Sparkles, ShoppingBag, Lock } from 'lucide-react';
 import { syncOrderToDropi } from './utils/api';
 import { fetchShopifyProducts, fetchPublicShopifyCatalog } from './utils/shopify';
 import { fetchDropiProducts } from './utils/dropi';
@@ -151,8 +152,24 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Integration Hub state
+  // Integration Hub & Admin Login state
   const [isIntegrationHubOpen, setIsIntegrationHubOpen] = useState(false);
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+
+  const handleOpenConfig = () => {
+    const sessionStr = localStorage.getItem('dante_admin_session');
+    if (sessionStr) {
+      try {
+        const session = JSON.parse(sessionStr);
+        // Valid for 24 hours
+        if (session.authenticated && new Date().getTime() - session.timestamp < 24 * 60 * 60 * 1000) {
+          setIsIntegrationHubOpen(true);
+          return;
+        }
+      } catch (e) {}
+    }
+    setIsAdminLoginOpen(true);
+  };
   
   // Active UI Navigation state
   const [activeSection, setActiveSection] = useState('inicio');
@@ -413,13 +430,26 @@ export default function App() {
           Tienda Oficial de Dante • Los mejores productos seleccionados para tu mascota con Envío Rápido y Pago Contra Entrega.
         </p>
         <div className="flex justify-center items-center space-x-4 text-slate-400">
-          <button onClick={() => setIsIntegrationHubOpen(true)} className="hover:text-amber-500 font-bold">Configuración</button>
+          <button onClick={handleOpenConfig} className="hover:text-amber-500 font-bold flex items-center space-x-1 cursor-pointer">
+            <Lock className="h-3 w-3 mr-1" />
+            <span>Acceso Staff</span>
+          </button>
           <span>•</span>
           <span className="text-slate-600">© {new Date().getFullYear()} La Tienda de Dante. Todos los derechos reservados.</span>
         </div>
       </footer>
 
       {/* FLOATING MODAL: Shopify & Dropi Integration Hub */}
+      {isAdminLoginOpen && (
+        <AdminLogin 
+          onLoginSuccess={() => {
+            setIsAdminLoginOpen(false);
+            setIsIntegrationHubOpen(true);
+          }}
+          onClose={() => setIsAdminLoginOpen(false)}
+        />
+      )}
+
       {isIntegrationHubOpen && (
         <IntegrationHub
           products={displayProducts}
