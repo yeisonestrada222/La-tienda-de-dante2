@@ -93,7 +93,11 @@ async function fetchAdminProductsREST(token: string): Promise<Product[]> {
 }
 
 function mapShopifyRestProducts(rawProducts: any[]): Product[] {
-  return rawProducts.map((p, index) => {
+  return rawProducts.filter(p => {
+    const variant = p.variants?.[0];
+    if (variant && variant.available === false) return false;
+    return true;
+  }).map((p, index) => {
     const variant = p.variants?.[0] || {};
     const price = Math.round(parseFloat(variant.price || '0'));
     const compareAtPrice = variant.compare_at_price ? Math.round(parseFloat(variant.compare_at_price)) : undefined;
@@ -148,6 +152,7 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
           node {
             id
             title
+            availableForSale
             description
             descriptionHtml
             productType
@@ -204,7 +209,7 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
 
   const edges: any[] = json.data?.products?.edges || [];
 
-  return edges.map((edge, index) => {
+  return edges.filter(edge => edge.node.availableForSale !== false).map((edge, index) => {
     const node = edge.node;
     const price = Math.round(parseFloat(node.priceRange.minVariantPrice.amount));
     const compareAtPrice = parseFloat(node.compareAtPriceRange.minVariantPrice.amount);

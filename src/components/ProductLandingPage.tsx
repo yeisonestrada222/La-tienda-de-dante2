@@ -1,6 +1,6 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { Product } from '../types';
-import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, Heart, ArrowLeft, PhoneCall, Clock, Users, Flame, ShieldAlert, Gift, ThumbsUp, X, ZoomIn } from 'lucide-react';
+import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, Heart, ArrowLeft, PhoneCall, Clock, Users, Flame, ShieldAlert, Gift, ThumbsUp, X, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react';
 import { syncOrderToDropi, syncOrderToCRM } from '../utils/api';
 import { trackViewContent, trackInitiateCheckout, trackPurchase } from '../utils/tracking';
 import { colombiaDepartments, colombiaLocations } from '../utils/colombiaLocations';
@@ -699,15 +699,44 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
           <button 
             onClick={() => setIsImageModalOpen(false)}
-            className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all z-50"
           >
             <X className="w-8 h-8" />
           </button>
           
+          {/* Next/Prev Buttons */}
+          {product.images && product.images.length > 1 && (
+            <>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const currentIndex = product.images!.indexOf(selectedImage);
+                  const nextIndex = (currentIndex - 1 + product.images!.length) % product.images!.length;
+                  setSelectedImage(product.images![nextIndex]);
+                }}
+                className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all z-50"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const currentIndex = product.images!.indexOf(selectedImage);
+                  const nextIndex = (currentIndex + 1) % product.images!.length;
+                  setSelectedImage(product.images![nextIndex]);
+                }}
+                className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all z-50"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+            </>
+          )}
+
           <img 
             src={selectedImage} 
             alt="Product full view" 
-            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl relative z-10"
             referrerPolicy="no-referrer"
           />
         </div>
