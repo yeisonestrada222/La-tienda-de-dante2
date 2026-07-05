@@ -116,6 +116,7 @@ function mapShopifyRestProducts(rawProducts: any[]): Product[] {
       price,
       compareAtPrice: compareAtPrice && compareAtPrice > price ? compareAtPrice : undefined,
       imageUrl,
+      images: p.images?.map((img: any) => img.src) || [],
       badge: index === 0 ? '⭐ Destacado' : undefined,
       features: [
         '✅ Producto con stock verificado',
