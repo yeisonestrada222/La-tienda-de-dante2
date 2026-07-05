@@ -1,6 +1,6 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { Product } from '../types';
-import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, Heart, ArrowLeft, PhoneCall, Clock, Users, Flame, ShieldAlert, Gift, ThumbsUp } from 'lucide-react';
+import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, Heart, ArrowLeft, PhoneCall, Clock, Users, Flame, ShieldAlert, Gift, ThumbsUp, X, ZoomIn } from 'lucide-react';
 import { syncOrderToDropi, syncOrderToCRM } from '../utils/api';
 import { trackViewContent, trackInitiateCheckout, trackPurchase } from '../utils/tracking';
 import { colombiaDepartments, colombiaLocations } from '../utils/colombiaLocations';
@@ -44,6 +44,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   }, [product]);
 
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   // Bug #6: precio de upsell dinámico proporcional al precio real del producto (20% de descuento)
   const getUpsellConfig = (prodId: string) => {
@@ -338,17 +339,23 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
                 
                 <div className="space-y-3">
-                  <div className="relative aspect-video sm:aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border border-slate-850">
+                  <button 
+                    onClick={() => setIsImageModalOpen(true)}
+                    className="relative aspect-video sm:aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border border-slate-850 block w-full group cursor-zoom-in"
+                  >
                     <img
                       src={selectedImage}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       referrerPolicy="no-referrer"
                     />
-                    <span className="absolute top-4 left-4 bg-amber-500 text-black font-sans font-extrabold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg shadow-lg">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                      <ZoomIn className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md w-8 h-8" />
+                    </div>
+                    <span className="absolute top-4 left-4 bg-amber-500 text-black font-sans font-extrabold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg shadow-lg z-10">
                       Recomendado por Dante
                     </span>
-                  </div>
+                  </button>
                   
                   {/* Image Thumbnails Gallery */}
                   {product.images && product.images.length > 1 && (
@@ -685,8 +692,26 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
 
           </div>
         )}
-
       </div>
+
+      {/* Image Full Screen Modal */}
+      {isImageModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
+          <button 
+            onClick={() => setIsImageModalOpen(false)}
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <img 
+            src={selectedImage} 
+            alt="Product full view" 
+            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      )}
     </div>
   );
 }
