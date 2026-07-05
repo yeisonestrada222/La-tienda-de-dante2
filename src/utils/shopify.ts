@@ -112,7 +112,7 @@ function mapShopifyRestProducts(rawProducts: any[]): Product[] {
       id: `shopify-${p.id}`,
       name: p.title || `Producto #${index + 1}`,
       category: p.product_type || 'Catálogo Principal',
-      description: p.body_html ? p.body_html.replace(/<[^>]*>?/gm, '') : 'Producto de alta calidad con stock verificado.',
+      description: p.body_html || 'Producto de alta calidad con stock verificado.',
       price,
       compareAtPrice: compareAtPrice && compareAtPrice > price ? compareAtPrice : undefined,
       imageUrl,
@@ -149,6 +149,7 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
             id
             title
             description
+            descriptionHtml
             productType
             tags
             featuredImage {
@@ -212,7 +213,7 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
       id: `shopify-${node.id.split('/').pop() || index}`,
       name: node.title,
       category: node.productType || 'Favoritos de Dante',
-      description: node.description || 'Producto exclusivo de nuestra tienda 🐾',
+      description: node.descriptionHtml || node.description || 'Producto exclusivo de nuestra tienda 🐾',
       price,
       compareAtPrice: compareAtPrice > price ? Math.round(compareAtPrice) : undefined,
       imageUrl: node.featuredImage?.url || 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=600',

@@ -43,6 +43,8 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
     setSelectedImage(product.imageUrl);
   }, [product]);
 
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
   // Bug #6: precio de upsell dinámico proporcional al precio real del producto (20% de descuento)
   const getUpsellConfig = (prodId: string) => {
     switch (prodId) {
@@ -380,9 +382,18 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                     {product.name}
                   </h1>
 
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    {product.description}
-                  </p>
+                  <div className="space-y-2">
+                    <div 
+                      className={`text-slate-300 text-sm leading-relaxed ${!isDescriptionExpanded ? 'line-clamp-4' : ''} [&>p]:mb-3 [&>strong]:text-white [&>ul]:list-disc [&>ul]:ml-5`}
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
+                    <button 
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className="text-amber-500 hover:text-amber-400 font-bold text-xs uppercase tracking-wider underline cursor-pointer"
+                    >
+                      {isDescriptionExpanded ? 'Ver menos' : 'Ver más'}
+                    </button>
+                  </div>
 
                   {/* Add to Cart Option */}
                   {onAddToCart && (
