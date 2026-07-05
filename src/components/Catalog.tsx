@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Product } from '../types';
 import { Star, ShoppingCart, CheckCircle2, MessageCircle, Sparkles } from 'lucide-react';
+import { stripHtml } from '../utils/stripHtml';
 
 interface CatalogProps {
   products: Product[];
@@ -136,7 +137,7 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
                   </h3>
 
                   <p className="mt-2 text-slate-400 text-xs line-clamp-2 leading-relaxed">
-                    {product.description.replace(/<[^>]*>/gm, '').replace(/&nbsp;/g, ' ').trim()}
+                    {stripHtml(product.description)}
                   </p>
 
                   {/* Pricing block */}

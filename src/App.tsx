@@ -46,7 +46,8 @@ export default function App() {
       }
 
       // 1. Verificar si hay token de Dropi configurado
-      const dropiToken = localStorage.getItem('dante_dropi_token');
+      // FIX #3: tokens sensibles en sessionStorage
+      const dropiToken = sessionStorage.getItem('dante_dropi_token');
       if (dropiToken) {
         try {
           const dropiProducts = await fetchDropiProducts(dropiToken);
@@ -62,10 +63,11 @@ export default function App() {
       }
 
       // 2. Usar token de Shopify (guardado o el secreto por defecto del usuario)
-      let shopifyToken = localStorage.getItem('dante_shopify_storefront_token');
+      // FIX #3: tokens sensibles en sessionStorage
+      let shopifyToken = sessionStorage.getItem('dante_shopify_storefront_token');
       if (!shopifyToken) {
         shopifyToken = DEFAULT_SHOPIFY_SECRET;
-        localStorage.setItem('dante_shopify_storefront_token', shopifyToken);
+        sessionStorage.setItem('dante_shopify_storefront_token', shopifyToken);
       }
 
       try {
@@ -443,7 +445,6 @@ export default function App() {
       {isAdminLoginOpen && (
         <AdminLogin 
           onLoginSuccess={() => {
-            setIsAdminLoginOpen(false);
             setIsAdminLoginOpen(false);
             setIsIntegrationHubOpen(true);
           }}

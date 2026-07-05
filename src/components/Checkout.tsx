@@ -80,8 +80,9 @@ export default function Checkout({
       const coupon = generatePersonalCoupon(name, randomId);
       setPersonalCoupon(coupon);
 
-    const dropiToken = localStorage.getItem('dante_dropi_token') || '';
-    const dropiBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
+    // FIX #3: tokens sensibles en sessionStorage
+    const dropiToken = sessionStorage.getItem('dante_dropi_token') || '';
+    const dropiBaseUrl = sessionStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
 
     // Bug #3: incluir dropiProductId real para que Dropi no reciba id=0
     const items = itemsToCheckout.map(item => ({

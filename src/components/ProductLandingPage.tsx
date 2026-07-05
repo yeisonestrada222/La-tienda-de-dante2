@@ -4,6 +4,7 @@ import { Truck, CheckCircle2, ShieldCheck, Star, ShoppingBag, Plus, Sparkles, He
 import { syncOrderToDropi, syncOrderToCRM } from '../utils/api';
 import { trackViewContent, trackInitiateCheckout, trackPurchase } from '../utils/tracking';
 import { colombiaDepartments, colombiaLocations } from '../utils/colombiaLocations';
+import DOMPurify from 'dompurify';
 
 interface ProductLandingPageProps {
   product: Product;
@@ -116,9 +117,10 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
       setOrderId(randomId);
 
     // Bug #2: persistir la orden en localStorage igual que Checkout.tsx
-    // Bug #3: incluir dropiProductId real
-    const dropiToken = localStorage.getItem('dante_dropi_token') || '';
-    const dropiBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
+    // Bug #2: auto-sync con Dropi si hay token disponible
+    // FIX #3: tokens sensibles en sessionStorage
+    const dropiToken = sessionStorage.getItem('dante_dropi_token') || '';
+    const dropiBaseUrl = sessionStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
 
     const orderItems = itemsToCheckout.map(item => ({
       id: item.product.id,
@@ -390,10 +392,21 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   </h1>
 
                   <div className="space-y-2">
-                    <div 
-                      className={`text-slate-300 text-sm leading-relaxed ${!isDescriptionExpanded ? 'line-clamp-4' : ''} [&>p]:mb-3 [&>strong]:text-white [&>ul]:list-disc [&>ul]:ml-5`}
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
+                    {/* FIX #1: Sanitizar HTML de Shopify con DOMPurify antes de renderizar */}
+                    {(() => {
+                      const sanitizedDescription = DOMPurify.sanitize(product.description, {
+                        ALLOWED_TAGS: ['p','strong','em','b','i','ul','ol','li','br','h2','h3','h4','span','a'],
+                        ALLOWED_ATTR: ['class','href','target'],
+                        FORBID_TAGS: ['script','iframe','object','embed','form','style'],
+                        FORBID_ATTR: ['onerror','onload','onclick','onmouseover'],
+                      });
+                      return (
+                        <div
+                          className={`text-slate-300 text-sm leading-relaxed ${!isDescriptionExpanded ? 'line-clamp-4' : ''} [&>p]:mb-3 [&>strong]:text-white [&>ul]:list-disc [&>ul]:ml-5`}
+                          dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+                        />
+                      );
+                    })()}
                     <button 
                       onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                       className="text-amber-500 hover:text-amber-400 font-bold text-xs uppercase tracking-wider underline cursor-pointer"
@@ -699,6 +712,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
           <button 
             onClick={() => setIsImageModalOpen(false)}
+            aria-label="Cerrar imagen"
             className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all z-50"
           >
             <X className="w-8 h-8" />
@@ -714,6 +728,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   const nextIndex = (currentIndex - 1 + product.images!.length) % product.images!.length;
                   setSelectedImage(product.images![nextIndex]);
                 }}
+                aria-label="Imagen anterior"
                 className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all z-50"
               >
                 <ChevronLeft className="w-8 h-8" />
@@ -726,6 +741,7 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                   const nextIndex = (currentIndex + 1) % product.images!.length;
                   setSelectedImage(product.images![nextIndex]);
                 }}
+                aria-label="Imagen siguiente"
                 className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-full transition-all z-50"
               >
                 <ChevronRight className="w-8 h-8" />

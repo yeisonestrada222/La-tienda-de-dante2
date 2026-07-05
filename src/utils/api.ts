@@ -151,19 +151,19 @@ export async function syncOrderToDropi(
  * Esto evade el bloqueo de CORS y crea el pedido directamente en tu Shopify.
  */
 export async function syncOrderToCRM(order: any): Promise<void> {
-  // Sacamos el token de Admin y el dominio de Shopify del localStorage
+  // FIX #2: adminToken NO se envía desde el cliente. El backend lo lee de process.env.SHOPIFY_ADMIN_TOKEN.
+  // Solo se envía el dominio (dato no sensible) para que el backend sepa a qué tienda apuntar.
   const shopifyDomain = localStorage.getItem('dante_shopify_domain') || import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || '';
-  const adminToken = localStorage.getItem('dante_shopify_admin_token') || '';
 
-  if (!shopifyDomain || !adminToken) {
+  if (!shopifyDomain) {
     return; // No Shopify CRM configured
   }
 
   try {
+    // SEGURIDAD: payload sin adminToken — el backend usa process.env.SHOPIFY_ADMIN_TOKEN
     const payload = {
       order,
       shopifyDomain,
-      adminToken
     };
 
     // Llamamos a nuestro propio backend Serverless alojado en Vercel

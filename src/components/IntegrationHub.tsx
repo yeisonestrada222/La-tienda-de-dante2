@@ -75,17 +75,19 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
   
   // Load credentials and orders on mount
   useEffect(() => {
-    const savedToken = localStorage.getItem('dante_dropi_token') || '';
-    const savedBaseUrl = localStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
-    const savedWompiKey = localStorage.getItem('dante_wompi_public_key') || '';
-    const savedStorefrontToken = localStorage.getItem('dante_shopify_storefront_token') || '';
-    const savedN8n = localStorage.getItem('dante_n8n_webhook_url') || '';
+    // FIX #3: Tokens sensibles en sessionStorage (expiran al cerrar la pestaña)
+    const savedToken = sessionStorage.getItem('dante_dropi_token') || '';
+    const savedBaseUrl = sessionStorage.getItem('dante_dropi_base_url') || 'https://api.dropi.co';
+    const savedWompiKey = sessionStorage.getItem('dante_wompi_public_key') || '';
+    const savedStorefrontToken = sessionStorage.getItem('dante_shopify_storefront_token') || '';
+    const savedN8n = sessionStorage.getItem('dante_n8n_webhook_url') || '';
     setDropiToken(savedToken);
     setDropiBaseUrl(savedBaseUrl);
     setWompiPublicKey(savedWompiKey);
     setShopifyStorefrontToken(savedStorefrontToken);
     setN8nWebhookUrl(savedN8n);
 
+    // dante_product_dropi_ids y dante_custom_categories son datos de config (no sensibles)
     const savedDropiIds = localStorage.getItem('dante_product_dropi_ids') || '{}';
     try {
       setProductDropiIds(JSON.parse(savedDropiIds) || {});
@@ -100,6 +102,7 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
       setCustomCategories({});
     }
 
+    // dante_orders NO es sensible — permanece en localStorage
     const savedOrdersStr = localStorage.getItem('dante_orders') || '[]';
     try {
       setOrders(JSON.parse(savedOrdersStr) || []);
@@ -109,11 +112,12 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
   }, []);
 
   const handleSaveCredentials = () => {
-    localStorage.setItem('dante_dropi_token', dropiToken.trim());
-    localStorage.setItem('dante_dropi_base_url', dropiBaseUrl.trim());
-    localStorage.setItem('dante_wompi_public_key', wompiPublicKey.trim());
-    localStorage.setItem('dante_shopify_storefront_token', shopifyStorefrontToken.trim());
-    localStorage.setItem('dante_n8n_webhook_url', n8nWebhookUrl.trim());
+    // FIX #3: Guardar tokens sensibles en sessionStorage
+    sessionStorage.setItem('dante_dropi_token', dropiToken.trim());
+    sessionStorage.setItem('dante_dropi_base_url', dropiBaseUrl.trim());
+    sessionStorage.setItem('dante_wompi_public_key', wompiPublicKey.trim());
+    sessionStorage.setItem('dante_shopify_storefront_token', shopifyStorefrontToken.trim());
+    sessionStorage.setItem('dante_n8n_webhook_url', n8nWebhookUrl.trim());
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
     // Recargar la página para que App.tsx recargue los productos de Shopify
@@ -396,9 +400,10 @@ export default function IntegrationHub({ products, onClose }: IntegrationHubProp
                     <label className="block text-[10px] text-slate-400 uppercase font-mono font-bold">Shopify Admin Token</label>
                     <input
                       type="password"
-                      value={localStorage.getItem('dante_shopify_admin_token') || ''}
+                      value={sessionStorage.getItem('dante_shopify_admin_token') || ''}
                       onChange={(e) => {
-                        localStorage.setItem('dante_shopify_admin_token', e.target.value.trim());
+                        // FIX #3: Token sensible en sessionStorage
+                        sessionStorage.setItem('dante_shopify_admin_token', e.target.value.trim());
                       }}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500 font-mono transition-all"
                       placeholder="shpat_..."

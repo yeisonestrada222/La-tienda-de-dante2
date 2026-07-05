@@ -212,7 +212,16 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
   return edges.filter(edge => edge.node.availableForSale !== false).map((edge, index) => {
     const node = edge.node;
     const price = Math.round(parseFloat(node.priceRange.minVariantPrice.amount));
-    const compareAtPrice = parseFloat(node.compareAtPriceRange.minVariantPrice.amount);
+    // QA Bug #1: compareAtPriceRange puede ser null en Shopify; usar optional chaining
+    const compareAtRawAmount = node.compareAtPriceRange?.minVariantPrice?.amount;
+    const compareAtPrice = compareAtRawAmount ? parseFloat(compareAtRawAmount) : NaN;
+
+    // QA Bug #2: garantizar que imageUrl sea siempre el primer elemento de images[]
+    const allImages: string[] = node.images?.edges?.map((e: any) => e.node.url) || [];
+    const featuredUrl: string | undefined = node.featuredImage?.url;
+    const images: string[] = featuredUrl && !allImages.includes(featuredUrl)
+      ? [featuredUrl, ...allImages]
+      : allImages.length > 0 ? allImages : (featuredUrl ? [featuredUrl] : []);
 
     return {
       id: `shopify-${node.id.split('/').pop() || index}`,
@@ -220,9 +229,9 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
       category: node.productType || 'Favoritos de Dante',
       description: node.descriptionHtml || node.description || 'Producto exclusivo de nuestra tienda 🐾',
       price,
-      compareAtPrice: compareAtPrice > price ? Math.round(compareAtPrice) : undefined,
-      imageUrl: node.featuredImage?.url || 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=600',
-      images: node.images?.edges?.map((e: any) => e.node.url) || [],
+      compareAtPrice: !isNaN(compareAtPrice) && compareAtPrice > price ? Math.round(compareAtPrice) : undefined,
+      imageUrl: images[0] || 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=600',
+      images,
       badge: index === 0 ? '⭐ Destacado' : undefined,
       features: [
         'Calidad premium con garantía',

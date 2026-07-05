@@ -87,6 +87,7 @@ export default function Navbar({
             <div className="relative">
               <button
                 onClick={() => setIsCartOpen(!isCartOpen)}
+                aria-label="Abrir carrito"
                 className="relative p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all cursor-pointer"
               >
                 <ShoppingCart className="h-5 w-5" />
@@ -213,6 +214,7 @@ export default function Navbar({
                 setIsMobileMenuOpen(!isMobileMenuOpen);
                 setIsCartOpen(false);
               }}
+              aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

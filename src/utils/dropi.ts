@@ -137,11 +137,12 @@ function mapDropiToProduct(raw: DropiProduct, index: number): Product {
   const name = raw.name || raw.nombre || `Producto Dropi #${raw.id}`;
   const description = raw.description || raw.descripcion || 'Producto de calidad disponible con envío a toda Colombia 🇨🇴';
   
-  // Precio de venta
-  const price = raw.precio_venta || raw.sale_price || raw.price || raw.precio || 0;
+  // QA Bug #5: Evitar falsy trap — precio 0 es válido y no debe ser descartado por el operador ||
+  const price = [raw.precio_venta, raw.sale_price, raw.price, raw.precio]
+    .find(v => v !== undefined && v !== null && v !== '') ?? 0;
   
   // Costo en Dropi (para calcular margen)
-  const dropiCost = raw.cost || raw.costo || raw.precio_base || raw.price || raw.precio || Math.round(price * 0.4);
+  const dropiCost = raw.cost || raw.costo || raw.precio_base || raw.price || raw.precio || Math.round((price as number) * 0.4);
   
   // Precio de comparación (mayor al de venta para mostrar descuento)
   const compareAtPrice = price > dropiCost ? Math.round(price * 1.4) : undefined;

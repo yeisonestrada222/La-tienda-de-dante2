@@ -18,10 +18,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { order, shopifyDomain, adminToken } = req.body;
+    const { order, shopifyDomain } = req.body;
+
+    // FIX #2: adminToken se lee desde variables de entorno del servidor, NO del body del cliente
+    const adminToken = process.env.SHOPIFY_ADMIN_TOKEN || '';
 
     if (!shopifyDomain || !adminToken) {
-      return res.status(400).json({ error: 'Faltan credenciales de Shopify Admin.' });
+      return res.status(400).json({ error: 'Faltan credenciales de Shopify Admin. Configura SHOPIFY_ADMIN_TOKEN en las variables de entorno de Vercel.' });
     }
 
     // Formatear el pedido para Shopify REST Admin API
