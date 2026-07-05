@@ -34,7 +34,16 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
-  // Bug #6: precio de upsell dinámico proporcional al precio real del producto (20% de descuento)
+  
+  // Image gallery state
+  const [selectedImage, setSelectedImage] = useState(product.imageUrl);
+
+  // Reset selected image when product changes
+  useEffect(() => {
+    setSelectedImage(product.imageUrl);
+  }, [product]);
+
+  // Bug #6: precio de upsell dinámico proporcional al precio real del producto (20% de descuento)
   const getUpsellConfig = (prodId: string) => {
     switch (prodId) {
       case 'dante-01':
@@ -326,26 +335,45 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
               {/* Product Visual Presentation */}
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
                 
-                <div className="relative aspect-video sm:aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border border-slate-850">
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                  <span className="absolute top-4 left-4 bg-amber-500 text-black font-sans font-extrabold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg shadow-lg">
-                    Recomendado por Dante
-                  </span>
+                <div className="space-y-3">
+                  <div className="relative aspect-video sm:aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border border-slate-850">
+                    <img
+                      src={selectedImage}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    <span className="absolute top-4 left-4 bg-amber-500 text-black font-sans font-extrabold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg shadow-lg">
+                      Recomendado por Dante
+                    </span>
+                  </div>
+                  
+                  {/* Image Thumbnails Gallery */}
+                  {product.images && product.images.length > 1 && (
+                    <div className="flex items-center space-x-2 overflow-x-auto pb-2 custom-scrollbar">
+                      {product.images.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedImage(img)}
+                          className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
+                            selectedImage === img ? 'border-amber-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+                          }`}
+                        >
+                          <img
+                            src={img}
+                            alt={`${product.name} ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-amber-500">
                     <span>{product.category}</span>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                      <span className="text-white font-bold">{product.rating}</span>
-                      <span className="text-slate-500">({product.reviewsCount} opiniones)</span>
-                    </div>
                   </div>
 
                   <h1 className="font-sans font-extrabold text-3xl text-white leading-tight">
@@ -462,51 +490,17 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
                       <span className="text-[10px] text-emerald-400 font-semibold">🔒 Pagas al recibir en tu casa</span>
                     </div>
                   </div>
-                  <span className="px-2 py-1 bg-slate-950 border border-slate-800 text-[10px] text-slate-400 font-mono rounded-lg">
-                    Envío 24/48h
+                  <span className="px-2 py-1 bg-slate-950 border border-slate-800 text-[10px] text-emerald-400 font-mono rounded-lg font-bold">
+                    Envío Gratis
                   </span>
                 </div>
 
-                {/* ═══ OPT #1: URGENCY STRIP — Contador + Viewers + Stock ═══ */}
-                <div className="bg-red-950/40 border border-red-500/30 rounded-xl px-4 py-2.5 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1.5">
-                      <Clock className="h-3.5 w-3.5 text-red-400 animate-pulse" />
-                      <span className="text-[10px] text-red-300 font-bold uppercase tracking-wider">
-                        Precio especial expira en:
-                      </span>
-                    </div>
-                    <span className="font-mono text-red-400 font-extrabold text-sm tracking-widest">
-                      {formatTimer(timeLeft)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[10px]">
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-3 w-3 text-amber-400" />
-                      <span className="text-slate-300">
-                        <strong className="text-amber-400">{viewers}</strong> personas viendo ahora
-                      </span>
-                    </div>
-                    <div className={`flex items-center space-x-1 font-bold ${stockLeft <= 5 ? 'text-red-400' : 'text-amber-400'}`}>
-                      <ShieldAlert className="h-3 w-3" />
-                      <span>Solo {stockLeft} en stock</span>
-                    </div>
-                  </div>
+                {/* Envío gratis garantizado */}
+                <div className="p-2.5 bg-emerald-950/30 border border-emerald-500/20 rounded-xl text-center shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                  <p className="text-[11px] text-emerald-400 font-bold uppercase tracking-wider">
+                    🚚 ¡TU PEDIDO INCLUYE ENVÍO GRATIS! 🎉
+                  </p>
                 </div>
-
-                {/* OPT #5: Barra de progreso envío gratis */}
-                {subtotal < FREE_SHIPPING_THRESHOLD && (
-                  <div className="p-2.5 bg-emerald-950/30 border border-emerald-500/20 rounded-xl text-center">
-                    <p className="text-[10px] text-emerald-400 font-bold">
-                      🎁 Agrega ${(FREE_SHIPPING_THRESHOLD - subtotal).toLocaleString('es-CO')} más y obtén <strong>¡ENVÍO GRATIS!</strong>
-                    </p>
-                  </div>
-                )}
-                {subtotal >= FREE_SHIPPING_THRESHOLD && (
-                  <div className="p-2.5 bg-emerald-950/30 border border-emerald-500/20 rounded-xl text-center">
-                    <p className="text-[10px] text-emerald-400 font-bold">🚚 ¡Felicidades! Tu pedido tiene <strong>ENVÍO GRATIS</strong> 🎉</p>
-                  </div>
-                )}
 
                 {/* CLEAN MULTI-BUY SELECTOR */}
                 <div className="space-y-2">

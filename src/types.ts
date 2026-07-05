@@ -6,6 +6,7 @@ export interface Product {
   price: number;
   compareAtPrice?: number;
   imageUrl: string;
+  images?: string[];
   badge?: string;
   features: string[];
   specs: { [key: string]: string };

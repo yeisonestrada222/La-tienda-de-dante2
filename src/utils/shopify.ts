@@ -153,6 +153,13 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
             featuredImage {
               url
             }
+            images(first: 5) {
+              edges {
+                node {
+                  url
+                }
+              }
+            }
             priceRange {
               minVariantPrice {
                 amount
@@ -208,6 +215,7 @@ async function fetchStorefrontProductsGraphQL(token: string, maxProducts: number
       price,
       compareAtPrice: compareAtPrice > price ? Math.round(compareAtPrice) : undefined,
       imageUrl: node.featuredImage?.url || 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=600',
+      images: node.images?.edges?.map((e: any) => e.node.url) || [],
       badge: index === 0 ? '⭐ Destacado' : undefined,
       features: [
         'Calidad premium con garantía',

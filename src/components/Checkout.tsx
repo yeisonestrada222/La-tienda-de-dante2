@@ -48,9 +48,8 @@ export default function Checkout({
     : cart;
 
   const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  // OPT #5: Envío gratis por compra >= $150.000 (incentiva aumentar el ticket AOV)
-  const FREE_SHIPPING_THRESHOLD = 150000;
-  const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 20000;
+  // Envío siempre gratis según solicitud
+  const shippingCost = 0;
   const baseTotalPrice = subtotal + shippingCost;
   const totalPrice = baseTotalPrice + (addOrderBump ? orderBumpPrice : 0);
 
@@ -272,7 +271,7 @@ export default function Checkout({
               <div className="bg-slate-900/60 p-3.5 border border-slate-850 rounded-xl space-y-2">
                 <div className="flex justify-between items-center text-xs text-slate-300 font-bold">
                   <span>Envío + Gestión (Con Recaudo):</span>
-                  <span className="text-amber-400 font-mono">+${shippingCost.toLocaleString('es-CO')}</span>
+                  <span className="text-emerald-400 font-bold font-mono">GRATIS</span>
                 </div>
                 {addOrderBump && (
                   <div className="flex justify-between items-center text-[11px] text-amber-500 font-bold">
