@@ -96,9 +96,8 @@ export default function ProductLandingPage({ product, allProducts, onBackToStore
       ];
 
   const subtotal = itemsToCheckout.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  // OPT #5: Envío gratis por compra >= $150.000
-  const FREE_SHIPPING_THRESHOLD = 150000;
-  const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 20000;
+  // Envío siempre gratis y contra entrega según requerimiento
+  const shippingCost = 0;
   const totalPrice = subtotal + shippingCost;
 
   const handleConfirmOrder = async (e: FormEvent) => {
