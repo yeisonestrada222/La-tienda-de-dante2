@@ -136,7 +136,7 @@ export default function Catalog({ products, onAddToCart, onOpenCheckoutWithProdu
                   </h3>
 
                   <p className="mt-2 text-slate-400 text-xs line-clamp-2 leading-relaxed">
-                    {product.description}
+                    {product.description.replace(/<[^>]*>/gm, '').replace(/&nbsp;/g, ' ').trim()}
                   </p>
 
                   {/* Pricing block */}
